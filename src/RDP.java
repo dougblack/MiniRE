@@ -211,10 +211,9 @@ public class RDP {
 		return true;
 	}
 	
-	private boolean exclude_set_tail(){
+	private boolean exclude_set_tail() throws IOException{
 		
 		if (_char.getNextChar()=='['){
-			return false;
 		if(!char_set())
 			return false;
 		if(_char.getNextChar()!=']')
@@ -224,6 +223,9 @@ public class RDP {
 		}
 		
 		if(charIn(_char.getNextChar(),array))
+			return true;
+		
+		return false;
 		
 	}
 }
