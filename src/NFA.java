@@ -1,29 +1,47 @@
 import java.util.ArrayList;
-import java.util.EmptyStackException;
 import java.util.Stack;
 
 public class NFA {
+	
+	Automata thisNFA;
+	String thisRegex;
 
 	public static void main(String args[]) {
 
-		String regex1 = "(a|b)*\\.(b|c)*";
-		String regex2 = ".";
-		String regex3 = "a*";
-
-		Automata regex1Automata = regexToAutomata(regex1);
-		regex1Automata.outNode.setEnd();
-		System.out.println("1 match :" + testString(regex1Automata, "abababaaab"));
-		System.out.println("1 match :" + testString(regex1Automata, "ababaajklbccb"));
-		System.out.println("============");
-		Automata regex2Automata = regexToAutomata(regex2);
-		regex2Automata.outNode.setEnd();
-		System.out.println("2 match :" + testString(regex2Automata, "a"));
-		System.out.println("============");
-		Automata regex3Automata = regexToAutomata(regex3);
-		regex3Automata.outNode.setEnd();
-		System.out.println("3 match :" + testString(regex3Automata, "aaaaaa"));
-		System.out.println("3 match :" + testString(regex3Automata, "aba"));
-		System.out.println("============");
+		NFA nfa1 = new NFA("(a|b)*\\.(b|c)*");
+		nfa1.testNFA("abababaaaabbb", "abbbabbkjkababaaa", "aba.bc");
+		
+		NFA nfa2 = new NFA(".");
+		nfa2.testNFA("a", "bca", "", "c");
+		
+		NFA nfa3 = new NFA("a*");
+		nfa3.testNFA("a", "", "ababa", "aaaaaa");
+		
+		NFA nfa4 = new NFA("a+");
+		nfa4.testNFA("a", "", "abaa", "aaaa");
+	}
+	
+	public NFA(String regex) {
+		thisRegex = regex;
+		thisNFA = regexToAutomata(regex);
+		thisNFA.outNode.setEnd();
+	}
+	
+	public void testNFA(String ...strings) {
+		boolean matches = false;
+		String result = "";
+		System.out.println("NFA REGEX: \"" + thisRegex + "\"");
+		for (int i = 0; i < strings.length; i++) {
+			matches = testString(thisNFA, strings[i]);
+			
+			result = "Test: \"" + strings[i] + "\" was";
+			if (matches)
+				result += " accepted.";
+			else
+				result += " was not accepted.";
+			
+			System.out.println(result);
+		}
 	}
 
 	public static Automata regexToAutomata(String regex) {
