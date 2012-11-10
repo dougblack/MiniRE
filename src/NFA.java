@@ -26,8 +26,8 @@ public class NFA {
 		NFA nfa6 = new NFA("[^a]*");
 		nfa6.testNFA("a", "b", "bb", "ba");
 		
-		NFA nfa7 = new NFA("[a-z]");
-		nfa7.testNFA("A", "q");
+		NFA nfa7 = new NFA("[a-z](b|c)");
+		nfa7.testNFA("A", "a", "ab", "abbc");
 		
 		NFA nfa8 = new NFA("[^a-z]*");
 		nfa8.testNFA("0192831092830");
@@ -145,13 +145,17 @@ public class NFA {
 			char currentChar = regex.charAt(i);
 
 			if (currentChar == '\\' && !escaped) { // Escape character. Set escaped flag for next character. escaped = true;
+				System.out.println("Escape encountered.");
+				escaped = true;
 				continue;
 			}
 			if (escaped) { // Character is escaped. So add a CharacterPath accepting just that character.
+				System.out.println("Adding escaped character: " + currentChar);
 				Automata next = new Automata();
 				next.setInteriorPath(new CharacterPath("" + currentChar));
 				Automata last = automataStack.peek();
 				last.connectToAutomata(next);
+				automataStack.push(next);
 			} else if (currentChar == '.') { // Wildcard character. Add AnythingPath.
 //				System.out.println("Wildcard. Adding anything path.");
 				Automata next = new Automata();
