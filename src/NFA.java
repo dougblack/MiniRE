@@ -29,8 +29,8 @@ public class NFA {
 		NFA nfa7 = new NFA("[a-z]");
 		nfa7.testNFA("A", "q");
 		
-		NFA nfa8 = new NFA("[a-z|A-Z]*");
-		nfa8.testNFA("DougBlackBitches");
+		NFA nfa8 = new NFA("[^a-z]*");
+		nfa8.testNFA("0192831092830");
 	}
 	
 	public NFA(String regex) {
@@ -57,7 +57,69 @@ public class NFA {
 	}
 
 	public static Automata regexToAutomata(String regex) {
+		regex = preprocessCharacterClasses(regex);
 		return regexToAutomataHelper(regex, 0, regex.length());
+	}
+	
+	public static String preprocessCharacterClasses(String regex) {
+		
+		boolean parenthesis = false;
+		for (int i = 0; i < regex.length(); i++) {
+			if (regex.charAt(i) == '[') {
+				int j = indexOfClosing(regex, i+1, regex.length(), '[');
+				for (int x = i+1; x < j; x++) {
+					char currentChar = regex.charAt(x);
+					char nextChar = regex.charAt(x+1);
+					char bracketTargetChar = 'a';
+					if (x+3 <= j) bracketTargetChar = regex.charAt(x+3);
+					if (nextChar == '-' && bracketTargetChar == ']') {
+						System.out.println("Last range hit.");
+						if (parenthesis) {
+							regex = new StringBuffer(regex).insert(x+3, ')').toString();
+							j++;
+						}
+						break;
+					} else if (nextChar == '-') {
+						System.out.println("Range.");
+						if (bracketTargetChar != '|')
+							regex = new StringBuffer(regex).insert(x+3, '|').toString();
+						else 
+							x=x+1;
+						x = x+3;
+						j++;
+					} else if (nextChar == ']') {
+						System.out.println("Hit end.");
+						break;
+					} else if (currentChar == '-') {
+						System.out.println("Hit dash. Bad.");
+						x++;
+					} else if (currentChar =='^') {
+						System.out.println("Hit caret. Build parenthesis!");
+						regex = new StringBuffer(regex).insert(x+1, '(').toString();
+						parenthesis = true;
+						x++;
+						j++;
+						continue;
+					} else if (currentChar == '|') {  
+						System.out.println("Hit pipe or caret. Bad.");
+					} else {
+						System.out.println("Regular character.");
+						regex = new StringBuffer(regex).insert(x+1, '|').toString();
+						x=x+1;
+						j++;
+					}
+					if (parenthesis) {
+						if (regex.charAt(x) == '|' || regex.charAt(x) == ']') x--;
+						regex = new StringBuffer(regex).insert(x+1, ')').toString();
+						x++;
+						j++;
+						parenthesis = false;
+					}
+				}
+				i = j;
+			}
+		}
+		return regex;
 	}
 
 	/**
