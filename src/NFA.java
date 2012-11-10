@@ -58,6 +58,7 @@ public class NFA {
 
 	public static Automata regexToAutomata(String regex) {
 		regex = preprocessCharacterClasses(regex);
+		System.out.println("Preprocessed: " + regex);
 		return regexToAutomataHelper(regex, 0, regex.length());
 	}
 	
@@ -73,7 +74,7 @@ public class NFA {
 					char bracketTargetChar = 'a';
 					if (x+3 <= j) bracketTargetChar = regex.charAt(x+3);
 					if (nextChar == '-' && bracketTargetChar == ']') {
-						System.out.println("Last range hit.");
+//						System.out.println("Last range hit.");
 						if (parenthesis) {
 							regex = new StringBuffer(regex).insert(x+3, ')').toString();
 							j++;
@@ -88,22 +89,24 @@ public class NFA {
 						x = x+3;
 						j++;
 					} else if (nextChar == ']') {
-						System.out.println("Hit end.");
+//						System.out.println("Hit end.");
 						break;
 					} else if (currentChar == '-') {
-						System.out.println("Hit dash. Bad.");
+//						System.out.println("Hit dash. Bad.");
 						x++;
 					} else if (currentChar =='^') {
-						System.out.println("Hit caret. Build parenthesis!");
-						regex = new StringBuffer(regex).insert(x+1, '(').toString();
-						parenthesis = true;
-						x++;
-						j++;
-						continue;
+//						System.out.println("Hit caret. Build parenthesis!");
+						if ((x+2) < j && (regex.charAt(x+2) == '-')) {
+							regex = new StringBuffer(regex).insert(x+1, '(').toString();
+							parenthesis = true;
+							x++;
+							j++;
+							continue;
+						}
 					} else if (currentChar == '|') {  
-						System.out.println("Hit pipe or caret. Bad.");
+//						System.out.println("Hit pipe or caret. Bad.");
 					} else {
-						System.out.println("Regular character.");
+//						System.out.println("Regular character.");
 						regex = new StringBuffer(regex).insert(x+1, '|').toString();
 						x=x+1;
 						j++;
@@ -150,7 +153,7 @@ public class NFA {
 				Automata last = automataStack.peek();
 				last.connectToAutomata(next);
 			} else if (currentChar == '.') { // Wildcard character. Add AnythingPath.
-				System.out.println("Wildcard. Adding anything path.");
+//				System.out.println("Wildcard. Adding anything path.");
 				Automata next = new Automata();
 				next.setInteriorPath(new AnythingPath());
 				Automata last = automataStack.peek();
@@ -159,7 +162,7 @@ public class NFA {
 			} 
 			/*	 Star character. Connect beginning and end of last automata to make two-way loop.*/
 			else if (currentChar == '*' && automataStack.size() > 0) { 
-				System.out.println("Star. Connect beginning and end of last automata to make two-way loop.");
+//				System.out.println("Star. Connect beginning and end of last automata to make two-way loop.");
 				Automata last = automataStack.peek();
 				last.inNode.connect(last.outNode);
 				last.outNode.connect(last.inNode);
@@ -190,7 +193,7 @@ public class NFA {
 			/* Parenthesis. Create Automata for inside. So recurse over inside regex.*/
 			else if (currentChar == '(') { 
 				int closingIndex = indexOfClosing(regex, i + 1, end, '(');
-				System.out.println("Parenthesis. Building automata for " + regex.substring(i, closingIndex + 1));
+//				System.out.println("Parenthesis. Building automata for " + regex.substring(i, closingIndex + 1));
 				Automata insideAutomata = regexToAutomataHelper(regex, i + 1, closingIndex);
 				Automata last = automataStack.peek();
 				last.connectToAutomata(insideAutomata);
@@ -198,14 +201,14 @@ public class NFA {
 				i = closingIndex;
 			} else if (currentChar == '[') { // Character class begins.
 				int closingIndex = indexOfClosing(regex, i + 1, end, '[');
-				System.out.println("Bracket. Building automata for " + regex.substring(i, closingIndex + 1));
+//				System.out.println("Bracket. Building automata for " + regex.substring(i, closingIndex + 1));
 				Automata rangeAutomata = regexToAutomataHelper(regex, i + 1, closingIndex);
 				Automata last = automataStack.peek();
 				last.connectToAutomata(rangeAutomata);
 				automataStack.push(rangeAutomata);
 				i = closingIndex;
 			} else if (currentChar == '^' && i+2 < end && regex.charAt(i+2) == '-') {
-				System.out.println("Caret. Building InversePath automata for range.");
+//				System.out.println("Caret. Building InversePath automata for range.");
 				Automata inverseAutomata = new Automata();
 				inverseAutomata.setInteriorPath(new ConverseRangePath(regex.charAt(i+1), regex.charAt(i+3)));
 				Automata last = automataStack.peek();
@@ -213,15 +216,23 @@ public class NFA {
 				automataStack.push(inverseAutomata);
 				i = i+3;
 			} else if (currentChar == '^') {
-				System.out.println("Caret. Building InversePath automata for character: " + regex.charAt(i+1));
 				Automata inverseAutomata = new Automata();
-				inverseAutomata.setInteriorPath(new ConversePath("" + regex.charAt(i+1)));
+				if (regex.charAt(i+1) == '(') {
+					char startRange = regex.charAt(i+2);
+					char endRange = regex.charAt(i+4);
+//					System.out.println("Caret. Building ConverseRangePath automata for range: " + startRange + "-" + endRange + ".");
+					inverseAutomata.setInteriorPath(new ConverseRangePath(startRange, endRange));
+					i=i+5;
+				} else {
+//					System.out.println("Caret. Building InversePath automata for character: " + regex.charAt(i+1));
+					inverseAutomata.setInteriorPath(new ConversePath("" + regex.charAt(i+1)));
+					i=i+1;
+				}
 				Automata last = automataStack.peek();
 				last.connectToAutomata(inverseAutomata);
 				automataStack.push(inverseAutomata);
-				i=i+1;
 			} else if (i+1 < end && regex.charAt(i+1) == '-') {
-				System.out.println("Dash is next. Adding RangePath for " + currentChar + "-" + regex.charAt(i+2));
+//				System.out.println("Dash is next. Adding RangePath for " + currentChar + "-" + regex.charAt(i+2));
 				Automata next = new Automata();
 				next.setInteriorPath(new RangePath(currentChar, regex.charAt(i+2)));
 				Automata last = automataStack.peek();
@@ -229,7 +240,7 @@ public class NFA {
 				automataStack.push(next);
 				i = i+2;
 			} else { // Just a random character. Accept it.
-				System.out.println("Random character. Adding CharacterPath for: " + currentChar);
+//				System.out.println("Random character. Adding CharacterPath for: " + currentChar);
 				Automata next = new Automata();
 				next.setInteriorPath(new CharacterPath("" + currentChar));
 				Automata last = automataStack.peek();
