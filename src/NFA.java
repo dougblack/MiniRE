@@ -163,15 +163,13 @@ public class NFA {
 				Automata last = automataStack.peek();
 				last.connectToAutomata(next);
 				automataStack.push(next);
-<<<<<<< HEAD
 
                 // store all nodes, removing any older versions that may exist
                 nodes.add(next.inNode);
                 nodes.add(next.outNode);
                 nodes.remove(last.outNode);
                 nodes.add(last.outNode);
-=======
->>>>>>> a0055c60931a0197052a45ba721efede23b933d8
+
 			} else if (currentChar == '.') { // Wildcard character. Add AnythingPath.
 //				System.out.println("Wildcard. Adding anything path.");
 				Automata next = new Automata();
@@ -313,7 +311,6 @@ public class NFA {
 				Automata last = automataStack.peek();
 				last.connectToAutomata(inverseAutomata);
 				automataStack.push(inverseAutomata);
-<<<<<<< HEAD
 
                 // store all nodes, removing any older versions that may exist
                 nodes.remove(inverseAutomata.inNode);
@@ -324,8 +321,7 @@ public class NFA {
                 nodes.add(last.inNode);
                 nodes.remove(last.outNode);
                 nodes.add(last.outNode);
-=======
->>>>>>> a0055c60931a0197052a45ba721efede23b933d8
+
 			} else if (i+1 < end && regex.charAt(i+1) == '-') {
 //				System.out.println("Dash is next. Adding RangePath for " + currentChar + "-" + regex.charAt(i+2));
 				Automata next = new Automata();
