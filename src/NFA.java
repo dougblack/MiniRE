@@ -734,6 +734,11 @@ class Automata {
 	 * @param path
 	 */
 	public void setInteriorPath(Path path) {
+        /*for (Path pafth : this.inNode.paths) {
+            if (pafth.destination.equals(this.outNode)) {
+                this.inNode.paths.remove(pafth);
+            }
+        }*/
 		path.destination = this.outNode;
 		this.inNode.addPath(path);
 	}
