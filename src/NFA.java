@@ -14,11 +14,23 @@ public class NFA {
 		NFA nfa2 = new NFA(".");
 		nfa2.testNFA("a", "bca", "", "c");
 		
-		NFA nfa3 = new NFA("a*");
-		nfa3.testNFA("a", "", "ababa", "aaaaaa");
+		NFA nfa3 = new NFA("(ab)*");
+		nfa3.testNFA("a", "", "ababa", "ababab");
 		
-		NFA nfa4 = new NFA("a+");
-		nfa4.testNFA("a", "", "abaa", "aaaa");
+		NFA nfa4 = new NFA("(dougblack)+");
+		nfa4.testNFA("a", "", "dougblack", "dougblackdougblack");
+		
+		NFA nfa5 = new NFA("[0-9]*");
+		nfa5.testNFA("0", "1", "58989");
+		
+		NFA nfa6 = new NFA("[^a]*");
+		nfa6.testNFA("a", "b", "bb", "ba");
+		
+		NFA nfa7 = new NFA("[a-z]");
+		nfa7.testNFA("A", "q");
+		
+		NFA nfa8 = new NFA("[a-z|A-Z]*");
+		nfa8.testNFA("DougBlackBitches");
 	}
 	
 	public NFA(String regex) {
@@ -38,7 +50,7 @@ public class NFA {
 			if (matches)
 				result += " accepted.";
 			else
-				result += " was not accepted.";
+				result += " not accepted.";
 			
 			System.out.println(result);
 		}
@@ -116,7 +128,6 @@ public class NFA {
 			/* Parenthesis. Create Automata for inside. So recurse over inside regex.*/
 			else if (currentChar == '(') { 
 				int closingIndex = indexOfClosing(regex, i + 1, end, '(');
-				/* if (closingIndex == -1) THROW ERROR */
 				System.out.println("Parenthesis. Building automata for " + regex.substring(i, closingIndex + 1));
 				Automata insideAutomata = regexToAutomataHelper(regex, i + 1, closingIndex);
 				Automata last = automataStack.peek();
@@ -125,11 +136,36 @@ public class NFA {
 				i = closingIndex;
 			} else if (currentChar == '[') { // Character class begins.
 				int closingIndex = indexOfClosing(regex, i + 1, end, '[');
-				Automata rangeAutomata = regexToRangeAutomata(regex, i + 1, closingIndex);
+				System.out.println("Bracket. Building automata for " + regex.substring(i, closingIndex + 1));
+				Automata rangeAutomata = regexToAutomataHelper(regex, i + 1, closingIndex);
 				Automata last = automataStack.peek();
 				last.connectToAutomata(rangeAutomata);
-				automataStack.push(last);
+				automataStack.push(rangeAutomata);
 				i = closingIndex;
+			} else if (currentChar == '^' && i+2 < end && regex.charAt(i+2) == '-') {
+				System.out.println("Caret. Building InversePath automata for range.");
+				Automata inverseAutomata = new Automata();
+				inverseAutomata.setInteriorPath(new ConverseRangePath(regex.charAt(i+1), regex.charAt(i+3)));
+				Automata last = automataStack.peek();
+				last.connectToAutomata(inverseAutomata);
+				automataStack.push(inverseAutomata);
+				i = i+3;
+			} else if (currentChar == '^') {
+				System.out.println("Caret. Building InversePath automata for character: " + regex.charAt(i+1));
+				Automata inverseAutomata = new Automata();
+				inverseAutomata.setInteriorPath(new ConversePath("" + regex.charAt(i+1)));
+				Automata last = automataStack.peek();
+				last.connectToAutomata(inverseAutomata);
+				automataStack.push(inverseAutomata);
+				i=i+1;
+			} else if (i+1 < end && regex.charAt(i+1) == '-') {
+				System.out.println("Dash is next. Adding RangePath for " + currentChar + "-" + regex.charAt(i+2));
+				Automata next = new Automata();
+				next.setInteriorPath(new RangePath(currentChar, regex.charAt(i+2)));
+				Automata last = automataStack.peek();
+				last.connectToAutomata(next);
+				automataStack.push(next);
+				i = i+2;
 			} else { // Just a random character. Accept it.
 				System.out.println("Random character. Adding CharacterPath for: " + currentChar);
 				Automata next = new Automata();
@@ -411,6 +447,8 @@ class RangePath extends Path {
 	char start, end;
 
 	public RangePath(char start, char end) {
+		this.start = start;
+		this.end = end;
 		this.nullPath = false;
 	}
 
@@ -420,6 +458,24 @@ class RangePath extends Path {
 
 	public String toString() {
 		return "RangePath accepting: " + start + "-" + end;
+	}
+}
+
+class ConverseRangePath extends Path {
+	char start, end;
+	
+	public ConverseRangePath(char start, char end) {
+		this.start = start;
+		this.end = end;
+		this.nullPath = false;
+	}
+	
+	public boolean matches (char c) {
+		return !(c >= start && c <= end);
+	}
+	
+	public String toString() {
+		return "ConverseRangePath accepting not in: " + start + "-" + end;
 	}
 }
 

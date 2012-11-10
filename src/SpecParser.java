@@ -24,6 +24,13 @@ public class SpecParser {
 		specNFAs = new HashMap<String, NFA>();
 	}
 	
+	/**
+	 * This method runs through the HashMap and reduces each definition to just straight regex
+	 * and then builds NFA's out of that regex. It requires substituting in the regex from other
+	 * token definitions and calculating inclusion principles. (i.e. [^A-Z] IN $ALPHA).
+	 * @param filename
+	 * @return
+	 */
 	public HashMap<String, NFA> parseFile(String filename) {
 		specDefinitions = readFile(filename);
 		for (Map.Entry<String, String> specEntry : specDefinitions.entrySet()) {
@@ -42,6 +49,10 @@ public class SpecParser {
 		return null;
 	}
 	
+	
+	/*
+	 * This method grabs lines and splits them into (token/spec name, definition). 
+	 */
 	public HashMap<String, String> readFile(String filename)
 	{
 		HashMap<String, String> specDefinitions = new HashMap<String, String>();
