@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 
@@ -30,14 +31,42 @@ public class TableWalker {
 	
 	public static void main (String args[]) {
 		TableWalker tw = new TableWalker("src/spec.txt", "src/program.txt");
+		
 		String[] testStrings = {"a", "1", "1.1", "abac", "+", "-", "*", "=", "PRINT"};
+		
+		
+		// Loop over test strings
 		for (String test : testStrings) {
-			System.out.println("TESTING STRING: " + test);
+			
+			/* Clear the state of the NFAs. This resets the "accepted" and "accepting"
+			 * values, as well as the current state of the machine. */
 			for (Map.Entry<String, NFA> specNFA : tw.specNFAs.entrySet()) {
-				String entry = specNFA.getKey();
-				NFA nfa = specNFA.getValue();
-				System.out.println("Testing for: " + entry);
-				nfa.testNFA(test);
+				specNFA.getValue().reset();
+			}
+		
+			/* Keep track of which NFAs have been accepted for each test string. */
+			@SuppressWarnings("unchecked")
+			HashMap<String, NFA> acceptingNFAs = (HashMap<String, NFA>) tw.specNFAs.clone(); 
+			for (int i = 0; i < test.length(); i++) {
+				char c = test.charAt(i);
+				
+				Iterator<Map.Entry<String, NFA>> entries = acceptingNFAs.entrySet().iterator();
+				while (entries.hasNext()) {
+					Map.Entry<String, NFA> specNFA = entries.next();
+					
+					String entry = specNFA.getKey();
+					NFA nfa = specNFA.getValue();
+					nfa.step(c);
+					if (!nfa.accepting) {
+						entries.remove();
+					}
+				}
+				if (acceptingNFAs.size() == 1) {
+					for (Map.Entry<String, NFA> entry : acceptingNFAs.entrySet()) {
+						System.out.println(test + " was last accepted by: " + entry.getKey());
+					}
+					break;
+				}
 			}
 		}
 		

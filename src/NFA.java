@@ -4,120 +4,133 @@ import java.util.Stack;
 import java.util.TreeSet;
 
 public class NFA {
-	
+
 	Automata thisNFA;
 	String thisRegex;
-    static HashSet<Node> nodes;
+	static HashSet<Node> nodes;
+	ArrayList<Node> occupiedNodeSet;
+	Node start;
+	Node end;
+	boolean accepting;
+	boolean accepted;
 
 	public static void main(String args[]) {
 
 		NFA nfa1 = new NFA("(a|b)*\\.(b|c)*");
 		nfa1.testNFA("abababaaaabbb", "abbbabbkjkababaaa", "aba.bc");
-		
+
 		NFA nfa2 = new NFA(".");
 		nfa2.testNFA("a", "bca", "", "c");
-		
+
 		NFA nfa3 = new NFA("(ab)*");
 		nfa3.testNFA("a", "", "ababa", "ababab");
-		
+
 		NFA nfa4 = new NFA("(dougblack)+");
 		nfa4.testNFA("a", "", "dougblack", "dougblackdougblack");
-		
+
 		NFA nfa5 = new NFA("[0-9]*");
 		nfa5.testNFA("0", "1", "58989");
-		
+
 		NFA nfa6 = new NFA("[^a]*");
 		nfa6.testNFA("a", "b", "bb", "ba");
-		
+
 		NFA nfa7 = new NFA("[a-z](b|c)");
 		nfa7.testNFA("A", "a", "ab", "abbc");
-		
+
 		NFA nfa8 = new NFA("[^a-z]*");
 		nfa8.testNFA("0192831092830");
 	}
-	
+
 	public NFA(String regex) {
-        nodes = new HashSet<Node>();
+		nodes = new HashSet<Node>();
 		thisRegex = regex;
 		thisNFA = regexToAutomata(regex);
 		thisNFA.outNode.setEnd();
+		occupiedNodeSet = new ArrayList<Node>();
+		start = thisNFA.inNode;
+		end = thisNFA.outNode;
+		occupiedNodeSet = traverseNullPaths(occupiedNodeSet, start);
+		accepting = true;
+		accepted = false;
 	}
-	
-	public void testNFA(String ...strings) {
+
+	public void testNFA(String... strings) {
 		boolean matches = false;
 		String result = "";
 		System.out.println("NFA REGEX: \"" + thisRegex + "\"");
 		for (int i = 0; i < strings.length; i++) {
 			matches = testString(thisNFA, strings[i]);
-			
+
 			result = "Test: \"" + strings[i] + "\" was";
 			if (matches)
 				result += " accepted.";
 			else
 				result += " not accepted.";
-			
+
 			System.out.println(result);
 		}
 	}
 
 	public static Automata regexToAutomata(String regex) {
 		regex = preprocessCharacterClasses(regex);
-//		System.out.println("Preprocessed: " + regex);
+		// System.out.println("Preprocessed: " + regex);
 		return regexToAutomataHelper(regex, 0, regex.length());
 	}
-	
+
 	public static String preprocessCharacterClasses(String regex) {
-		
+
 		boolean parenthesis = false;
 		for (int i = 0; i < regex.length(); i++) {
 			if (regex.charAt(i) == '[') {
-				int j = indexOfClosing(regex, i+1, regex.length(), '[');
-				for (int x = i+1; x < j; x++) {
+				int j = indexOfClosing(regex, i + 1, regex.length(), '[');
+				for (int x = i + 1; x < j; x++) {
 					char currentChar = regex.charAt(x);
-					char nextChar = regex.charAt(x+1);
+					char nextChar = regex.charAt(x + 1);
 					char bracketTargetChar = 'a';
-					if (x+3 <= j) bracketTargetChar = regex.charAt(x+3);
+					if (x + 3 <= j)
+						bracketTargetChar = regex.charAt(x + 3);
 					if (nextChar == '-' && bracketTargetChar == ']') {
-//						System.out.println("Last range hit.");
+						// System.out.println("Last range hit.");
 						if (parenthesis) {
-							regex = new StringBuffer(regex).insert(x+3, ')').toString();
+							regex = new StringBuffer(regex).insert(x + 3, ')').toString();
 							j++;
 						}
 						break;
 					} else if (nextChar == '-') {
-//						System.out.println("Range.");
+						// System.out.println("Range.");
 						if (bracketTargetChar != '|')
-							regex = new StringBuffer(regex).insert(x+3, '|').toString();
-						else 
-							x=x+1;
-						x = x+3;
+							regex = new StringBuffer(regex).insert(x + 3, '|').toString();
+						else
+							x = x + 1;
+						x = x + 3;
 						j++;
 					} else if (nextChar == ']') {
-//						System.out.println("Hit end.");
+						// System.out.println("Hit end.");
 						break;
 					} else if (currentChar == '-') {
-//						System.out.println("Hit dash. Bad.");
+						// System.out.println("Hit dash. Bad.");
 						x++;
-					} else if (currentChar =='^') {
-//						System.out.println("Hit caret. Build parenthesis!");
-						if ((x+2) < j && (regex.charAt(x+2) == '-')) {
-							regex = new StringBuffer(regex).insert(x+1, '(').toString();
+					} else if (currentChar == '^') {
+						// System.out.println("Hit caret. Build parenthesis!");
+						if ((x + 2) < j && (regex.charAt(x + 2) == '-')) {
+							regex = new StringBuffer(regex).insert(x + 1, '(').toString();
 							parenthesis = true;
 							x++;
 							j++;
 							continue;
 						}
-					} else if (currentChar == '|') {  
-//						System.out.println("Hit pipe or caret. Bad.");
+					} else if (currentChar == '|') {
+						// System.out.println("Hit pipe or caret. Bad.");
 					} else {
-//						System.out.println("Regular character.");
-						regex = new StringBuffer(regex).insert(x+1, '|').toString();
-						x=x+1;
+						// System.out.println("Regular character.");
+						regex = new StringBuffer(regex).insert(x + 1, '|').toString();
+						x = x + 1;
 						j++;
 					}
 					if (parenthesis) {
-						if (regex.charAt(x) == '|' || regex.charAt(x) == ']') x--;
-						regex = new StringBuffer(regex).insert(x+1, ')').toString();
+						if (regex.charAt(x) == '|' || regex.charAt(x) == ']')
+							x--;
+						regex = new StringBuffer(regex).insert(x + 1, ')').toString();
 						x++;
 						j++;
 						parenthesis = false;
@@ -131,6 +144,7 @@ public class NFA {
 
 	/**
 	 * This method constructs an NFA for the given regex section.
+	 * 
 	 * @param regex
 	 * @param start
 	 * @param end
@@ -141,9 +155,9 @@ public class NFA {
 		boolean escaped = false;
 		Automata root = new Automata();
 		root.inNode.connect(root.outNode);
-        // store all nodes for use in DFA.java
-        nodes.add(root.inNode);
-        nodes.add(root.outNode);
+		// store all nodes for use in DFA.java
+		nodes.add(root.inNode);
+		nodes.add(root.outNode);
 		Stack<Automata> automataStack = new Stack<Automata>();
 		automataStack.push(root);
 
@@ -151,65 +165,77 @@ public class NFA {
 
 			char currentChar = regex.charAt(i);
 
-			if (currentChar == '\\' && !escaped) { // Escape character. Set escaped flag for next character. escaped = true;
-//				System.out.println("Escape encountered.");
+			if (currentChar == '\\' && !escaped) { // Escape character. Set
+													// escaped flag for next
+													// character. escaped =
+													// true;
+			// System.out.println("Escape encountered.");
 				escaped = true;
 				continue;
 			}
-			if (escaped) { // Character is escaped. So add a CharacterPath accepting just that character.
-//				System.out.println("Adding escaped character: " + currentChar);
+			if (currentChar == ' ') {
+				continue;
+			}
+			if (escaped) { // Character is escaped. So add a CharacterPath
+							// accepting just that character.
+			// System.out.println("Adding escaped character: " + currentChar);
 				Automata next = new Automata();
-				next.setInteriorPath(new CharacterPath("" + currentChar));;
+				next.setInteriorPath(new CharacterPath("" + currentChar));
+				;
 				Automata last = automataStack.peek();
 				last.connectToAutomata(next);
 				automataStack.push(next);
 
-                // store all nodes, removing any older versions that may exist
-                nodes.add(next.inNode);
-                nodes.add(next.outNode);
-                nodes.remove(last.outNode);
-                nodes.add(last.outNode);
+				// store all nodes, removing any older versions that may exist
+				nodes.add(next.inNode);
+				nodes.add(next.outNode);
+				nodes.remove(last.outNode);
+				nodes.add(last.outNode);
 
-			} else if (currentChar == '.') { // Wildcard character. Add AnythingPath.
-//				System.out.println("Wildcard. Adding anything path.");
+			} else if (currentChar == '.') { // Wildcard character. Add
+												// AnythingPath.
+			// System.out.println("Wildcard. Adding anything path.");
 				Automata next = new Automata();
 				next.setInteriorPath(new AnythingPath());
 				Automata last = automataStack.peek();
 				last.connectToAutomata(next);
 
-                // store next's nodes, replace last's old outNode
-                nodes.add(next.inNode);
-                nodes.add(next.outNode);
-                nodes.remove(last.outNode);
-                nodes.add(last.outNode);
+				// store next's nodes, replace last's old outNode
+				nodes.add(next.inNode);
+				nodes.add(next.outNode);
+				nodes.remove(last.outNode);
+				nodes.add(last.outNode);
 				automataStack.push(next);
-			} 
-			/*	 Star character. Connect beginning and end of last automata to make two-way loop.*/
-			else if (currentChar == '*' && automataStack.size() > 0) { 
-//				System.out.println("Star. Connect beginning and end of last automata to make two-way loop.");
+			}
+			/*
+			 * Star character. Connect beginning and end of last automata to
+			 * make two-way loop.
+			 */
+			else if (currentChar == '*' && automataStack.size() > 0) {
+				// System.out.println("Star. Connect beginning and end of last automata to make two-way loop.");
 				Automata last = automataStack.peek();
 				last.inNode.connect(last.outNode);
 				last.outNode.connect(last.inNode);
 
-                // replace last's old nodes in the list
-                nodes.remove(last.inNode);
-                nodes.add(last.inNode);
-                nodes.remove(last.outNode);
-                nodes.add(last.outNode);
-			} 
-			 /* Repeat character. Connect end to beginning to make loop */
+				// replace last's old nodes in the list
+				nodes.remove(last.inNode);
+				nodes.add(last.inNode);
+				nodes.remove(last.outNode);
+				nodes.add(last.outNode);
+			}
+			/* Repeat character. Connect end to beginning to make loop */
 			else if (currentChar == '+') {
 				Automata last = automataStack.peek();
 				last.outNode.connect(last.inNode);
 
-                // replace last's old nodes in the list
-                nodes.remove(last.inNode);
-                nodes.add(last.inNode);
-                nodes.remove(last.outNode);
-                nodes.add(last.outNode);
-			} 
+				// replace last's old nodes in the list
+				nodes.remove(last.inNode);
+				nodes.add(last.inNode);
+				nodes.remove(last.outNode);
+				nodes.add(last.outNode);
+			}
 			/* Or character. Separate options and make null edges to both. */
-			else if (currentChar == '|') { 
+			else if (currentChar == '|') {
 				Automata optionA = new Automata(automataStack.firstElement().inNode, automataStack.peek().outNode);
 				Automata optionB = regexToAutomataHelper(regex, i + 1, end);
 
@@ -222,141 +248,150 @@ public class NFA {
 				optionB.outNode.connect(automata.outNode);
 				optionA.outNode.connect(automata.outNode);
 
-                // store all nodes, removing any older versions that may exist
-                nodes.remove(optionA.inNode);
-                nodes.add(optionA.inNode);
-                nodes.remove(optionA.outNode);
-                nodes.add(optionA.outNode);
-                nodes.remove(optionB.inNode);
-                nodes.add(optionB.inNode);
-                nodes.remove(optionB.outNode);
-                nodes.add(optionB.outNode);
-                nodes.remove(automata.inNode);
-                nodes.add(automata.inNode);
-                nodes.remove(automata.outNode);
-                nodes.add(automata.outNode);
+				// store all nodes, removing any older versions that may exist
+				nodes.remove(optionA.inNode);
+				nodes.add(optionA.inNode);
+				nodes.remove(optionA.outNode);
+				nodes.add(optionA.outNode);
+				nodes.remove(optionB.inNode);
+				nodes.add(optionB.inNode);
+				nodes.remove(optionB.outNode);
+				nodes.add(optionB.outNode);
+				nodes.remove(automata.inNode);
+				nodes.add(automata.inNode);
+				nodes.remove(automata.outNode);
+				nodes.add(automata.outNode);
 
 				automataStack.push(automata);
 				break;
 
-			} 
-			/* Parenthesis. Create Automata for inside. So recurse over inside regex.*/
-			else if (currentChar == '(') { 
+			}
+			/*
+			 * Parenthesis. Create Automata for inside. So recurse over inside
+			 * regex.
+			 */
+			else if (currentChar == '(') {
 				int closingIndex = indexOfClosing(regex, i + 1, end, '(');
-//				System.out.println("Parenthesis. Building automata for " + regex.substring(i, closingIndex + 1));
+				// System.out.println("Parenthesis. Building automata for " +
+				// regex.substring(i, closingIndex + 1));
 				Automata insideAutomata = regexToAutomataHelper(regex, i + 1, closingIndex);
 				Automata last = automataStack.peek();
 				last.connectToAutomata(insideAutomata);
 				automataStack.push(insideAutomata);
 				i = closingIndex;
 
-                // store all nodes, removing any older versions that may exist
-                nodes.remove(insideAutomata.inNode);
-                nodes.add(insideAutomata.inNode);
-                nodes.remove(insideAutomata.outNode);
-                nodes.add(insideAutomata.outNode);
-                nodes.remove(last.inNode);
-                nodes.add(last.inNode);
-                nodes.remove(last.outNode);
-                nodes.add(last.outNode);
+				// store all nodes, removing any older versions that may exist
+				nodes.remove(insideAutomata.inNode);
+				nodes.add(insideAutomata.inNode);
+				nodes.remove(insideAutomata.outNode);
+				nodes.add(insideAutomata.outNode);
+				nodes.remove(last.inNode);
+				nodes.add(last.inNode);
+				nodes.remove(last.outNode);
+				nodes.add(last.outNode);
 			} else if (currentChar == '[') { // Character class begins.
 				int closingIndex = indexOfClosing(regex, i + 1, end, '[');
-//				System.out.println("Bracket. Building automata for " + regex.substring(i, closingIndex + 1));
+				// System.out.println("Bracket. Building automata for " +
+				// regex.substring(i, closingIndex + 1));
 				Automata rangeAutomata = regexToAutomataHelper(regex, i + 1, closingIndex);
 				Automata last = automataStack.peek();
 				last.connectToAutomata(rangeAutomata);
 				automataStack.push(rangeAutomata);
 				i = closingIndex;
 
-                // store all nodes, removing any older versions that may exist
-                nodes.remove(rangeAutomata.inNode);
-                nodes.add(rangeAutomata.inNode);
-                nodes.remove(rangeAutomata.outNode);
-                nodes.add(rangeAutomata.outNode);
-                nodes.remove(last.inNode);
-                nodes.add(last.inNode);
-                nodes.remove(last.outNode);
-                nodes.add(last.outNode);
-			} else if (currentChar == '^' && i+2 < end && regex.charAt(i+2) == '-') {
-//				System.out.println("Caret. Building InversePath automata for range.");
+				// store all nodes, removing any older versions that may exist
+				nodes.remove(rangeAutomata.inNode);
+				nodes.add(rangeAutomata.inNode);
+				nodes.remove(rangeAutomata.outNode);
+				nodes.add(rangeAutomata.outNode);
+				nodes.remove(last.inNode);
+				nodes.add(last.inNode);
+				nodes.remove(last.outNode);
+				nodes.add(last.outNode);
+			} else if (currentChar == '^' && i + 2 < end && regex.charAt(i + 2) == '-') {
+				// System.out.println("Caret. Building InversePath automata for range.");
 				Automata inverseAutomata = new Automata();
-				inverseAutomata.setInteriorPath(new ConverseRangePath(regex.charAt(i+1), regex.charAt(i+3)));
+				inverseAutomata.setInteriorPath(new ConverseRangePath(regex.charAt(i + 1), regex.charAt(i + 3)));
 				Automata last = automataStack.peek();
 				last.connectToAutomata(inverseAutomata);
 				automataStack.push(inverseAutomata);
-				i = i+3;
+				i = i + 3;
 
-                // store all nodes, removing any older versions that may exist
-                nodes.remove(inverseAutomata.inNode);
-                nodes.add(inverseAutomata.inNode);
-                nodes.remove(inverseAutomata.outNode);
-                nodes.add(inverseAutomata.outNode);
-                nodes.remove(last.inNode);
-                nodes.add(last.inNode);
-                nodes.remove(last.outNode);
-                nodes.add(last.outNode);
+				// store all nodes, removing any older versions that may exist
+				nodes.remove(inverseAutomata.inNode);
+				nodes.add(inverseAutomata.inNode);
+				nodes.remove(inverseAutomata.outNode);
+				nodes.add(inverseAutomata.outNode);
+				nodes.remove(last.inNode);
+				nodes.add(last.inNode);
+				nodes.remove(last.outNode);
+				nodes.add(last.outNode);
 			} else if (currentChar == '^') {
 				Automata inverseAutomata = new Automata();
-				if (regex.charAt(i+1) == '(') {
-					char startRange = regex.charAt(i+2);
-					char endRange = regex.charAt(i+4);
-//					System.out.println("Caret. Building ConverseRangePath automata for range: " + startRange + "-" + endRange + ".");
+				if (regex.charAt(i + 1) == '(') {
+					char startRange = regex.charAt(i + 2);
+					char endRange = regex.charAt(i + 4);
+					// System.out.println("Caret. Building ConverseRangePath automata for range: "
+					// + startRange + "-" + endRange + ".");
 					inverseAutomata.setInteriorPath(new ConverseRangePath(startRange, endRange));
-					i=i+5;
+					i = i + 5;
 				} else {
-//					System.out.println("Caret. Building InversePath automata for character: " + regex.charAt(i+1));
-					inverseAutomata.setInteriorPath(new ConversePath("" + regex.charAt(i+1)));
-					i=i+1;
+					// System.out.println("Caret. Building InversePath automata for character: "
+					// + regex.charAt(i+1));
+					inverseAutomata.setInteriorPath(new ConversePath("" + regex.charAt(i + 1)));
+					i = i + 1;
 				}
 				Automata last = automataStack.peek();
 				last.connectToAutomata(inverseAutomata);
 				automataStack.push(inverseAutomata);
 
-                // store all nodes, removing any older versions that may exist
-                nodes.remove(inverseAutomata.inNode);
-                nodes.add(inverseAutomata.inNode);
-                nodes.remove(inverseAutomata.outNode);
-                nodes.add(inverseAutomata.outNode);
-                nodes.remove(last.inNode);
-                nodes.add(last.inNode);
-                nodes.remove(last.outNode);
-                nodes.add(last.outNode);
+				// store all nodes, removing any older versions that may exist
+				nodes.remove(inverseAutomata.inNode);
+				nodes.add(inverseAutomata.inNode);
+				nodes.remove(inverseAutomata.outNode);
+				nodes.add(inverseAutomata.outNode);
+				nodes.remove(last.inNode);
+				nodes.add(last.inNode);
+				nodes.remove(last.outNode);
+				nodes.add(last.outNode);
 
-			} else if (i+1 < end && regex.charAt(i+1) == '-') {
-//				System.out.println("Dash is next. Adding RangePath for " + currentChar + "-" + regex.charAt(i+2));
+			} else if (i + 1 < end && regex.charAt(i + 1) == '-') {
+				// System.out.println("Dash is next. Adding RangePath for " +
+				// currentChar + "-" + regex.charAt(i+2));
 				Automata next = new Automata();
-				next.setInteriorPath(new RangePath(currentChar, regex.charAt(i+2)));
+				next.setInteriorPath(new RangePath(currentChar, regex.charAt(i + 2)));
 				Automata last = automataStack.peek();
 				last.connectToAutomata(next);
 				automataStack.push(next);
-				i = i+2;
+				i = i + 2;
 
-                // store all nodes, removing any older versions that may exist
-                nodes.remove(next.inNode);
-                nodes.add(next.inNode);
-                nodes.remove(next.outNode);
-                nodes.add(next.outNode);
-                nodes.remove(last.inNode);
-                nodes.add(last.inNode);
-                nodes.remove(last.outNode);
-                nodes.add(last.outNode);
+				// store all nodes, removing any older versions that may exist
+				nodes.remove(next.inNode);
+				nodes.add(next.inNode);
+				nodes.remove(next.outNode);
+				nodes.add(next.outNode);
+				nodes.remove(last.inNode);
+				nodes.add(last.inNode);
+				nodes.remove(last.outNode);
+				nodes.add(last.outNode);
 			} else { // Just a random character. Accept it.
-//				System.out.println("Random character. Adding CharacterPath for: " + currentChar);
+			// System.out.println("Random character. Adding CharacterPath for: "
+			// + currentChar);
 				Automata next = new Automata();
 				next.setInteriorPath(new CharacterPath("" + currentChar));
 				Automata last = automataStack.peek();
 				last.connectToAutomata(next);
 				automataStack.push(next);
 
-                // store all nodes, removing any older versions that may exist
-                nodes.remove(next.inNode);
-                nodes.add(next.inNode);
-                nodes.remove(next.outNode);
-                nodes.add(next.outNode);
-                nodes.remove(last.inNode);
-                nodes.add(last.inNode);
-                nodes.remove(last.outNode);
-                nodes.add(last.outNode);
+				// store all nodes, removing any older versions that may exist
+				nodes.remove(next.inNode);
+				nodes.add(next.inNode);
+				nodes.remove(next.outNode);
+				nodes.add(next.outNode);
+				nodes.remove(last.inNode);
+				nodes.add(last.inNode);
+				nodes.remove(last.outNode);
+				nodes.add(last.outNode);
 			}
 
 			escaped = false;
@@ -367,6 +402,7 @@ public class NFA {
 
 	/**
 	 * Just finds a matching closing parenthesis/bracket.
+	 * 
 	 * @param regex
 	 * @param start
 	 * @param end
@@ -386,10 +422,10 @@ public class NFA {
 		return -1;
 	}
 
-	
 	/**
 	 * This method tests if the NFA accepts the given string. It does the extra
 	 * credit NFA traversal.
+	 * 
 	 * @param automata
 	 * @param string
 	 * @return
@@ -408,24 +444,50 @@ public class NFA {
 		return occupiedNodeSet.contains(end);
 	}
 	
+	public void step(char c) {
+		ArrayList<Node> nextOccupied = new ArrayList<Node>();
+		boolean oneNodeAccepted = false;
+		for (Node node : occupiedNodeSet) {
+			for (Path path : node.paths) {
+				if (path.matches(c)) {
+					oneNodeAccepted = true;
+					nextOccupied.add(path.destination);
+				}
+			}
+		}
+		accepting = oneNodeAccepted;
+		ArrayList<Node> blankSpan = new ArrayList<Node>();
+		for (Node node: nextOccupied) {
+			for (Path path : node.paths){
+				if (path.nullPath) {
+					blankSpan = traverseNullPaths(blankSpan, path.destination);
+				}
+			}
+		}
+		
+		nextOccupied.addAll(blankSpan);
+		occupiedNodeSet = nextOccupied;
+		accepted = occupiedNodeSet.contains(end);
+	}
 
 	/**
 	 * This method "steps" through the automata by following the rules of NFA.
 	 * (i.e. it follows blank paths and simulates "copying" itself)
+	 * 
 	 * @param occupiedNodeSet
 	 * @param c
 	 * @return
 	 */
 	public static ArrayList<Node> step(ArrayList<Node> occupiedNodeSet, char c) {
-		
+
 		/* TODO - count traversals and "clones" */
-		
+
 		ArrayList<Node> nextOccupied = new ArrayList<Node>();
 
 		for (Node node : occupiedNodeSet) {
 			for (Path path : node.paths) {
 				if (path.matches(c)) {
-					
+
 					nextOccupied.add(path.destination);
 				}
 			}
@@ -445,10 +507,20 @@ public class NFA {
 
 		return nextOccupied;
 	}
+	
+	public void reset() {
+		occupiedNodeSet = new ArrayList<Node>();
+		accepting = true;
+		accepted = false;
+		start = thisNFA.inNode;
+		end = thisNFA.outNode;
+		occupiedNodeSet = traverseNullPaths(occupiedNodeSet, start);
+	}
 
 	/**
-	 * This method traverses (with a depth-first-search) all the null
-	 *  (episilon) paths and returns the resultant set of nodes.
+	 * This method traverses (with a depth-first-search) all the null (episilon)
+	 * paths and returns the resultant set of nodes.
+	 * 
 	 * @param blankSpan
 	 * @param node
 	 * @return
@@ -471,37 +543,38 @@ public class NFA {
 		return blankSpan;
 	}
 
-    public Node getStartNode() {
-        return thisNFA.inNode;
-    }
+	public Node getStartNode() {
+		return thisNFA.inNode;
+	}
 
-    public Node getAcceptingNode() {
-        return thisNFA.outNode;
-    }
+	public Node getAcceptingNode() {
+		return thisNFA.outNode;
+	}
 
-    public HashSet<Node> getNodes() {
-        return nodes;
-    }
+	public HashSet<Node> getNodes() {
+		return nodes;
+	}
 
-    public TreeSet<Character> getAlphabet() {
-        TreeSet<Character> alphabet = new TreeSet<Character>();
-        for (char c = 32; c < 127; c++) {
-            for (Node node : nodes) {
-                if (node.accepts(c)) {
-                    alphabet.add(c);
-                }
-            }
-        }
-        return alphabet;
-    }
+	public TreeSet<Character> getAlphabet() {
+		TreeSet<Character> alphabet = new TreeSet<Character>();
+		for (char c = 32; c < 127; c++) {
+			for (Node node : nodes) {
+				if (node.accepts(c)) {
+					alphabet.add(c);
+				}
+			}
+		}
+		return alphabet;
+	}
 
 }
 
 /**
- * This represents a given state. It contains a list of outgoing
- * paths and a nodeId. Which is not really used...yet.
+ * This represents a given state. It contains a list of outgoing paths and a
+ * nodeId. Which is not really used...yet.
+ * 
  * @author Doug
- *
+ * 
  */
 class Node {
 
@@ -530,31 +603,32 @@ class Node {
 		end = true;
 	}
 
-    public HashSet<Node> getNextNodesFor(char c) {
-        HashSet<Node> nodes = new HashSet<Node>();
-        for (Path path : paths) {
-            if (path.matches(c)) {
-                nodes.add(path.destination);
-            }
-        }
-        return nodes;
-    }
+	public HashSet<Node> getNextNodesFor(char c) {
+		HashSet<Node> nodes = new HashSet<Node>();
+		for (Path path : paths) {
+			if (path.matches(c)) {
+				nodes.add(path.destination);
+			}
+		}
+		return nodes;
+	}
 
-    public boolean accepts (char c) {
-        for (Path path : paths) {
-            if (path.matches(c)) {
-                return true;
-            }
-        }
-        return false;
-    }
+	public boolean accepts(char c) {
+		for (Path path : paths) {
+			if (path.matches(c)) {
+				return true;
+			}
+		}
+		return false;
+	}
 }
 
 /**
- * The parent Path object. It is initalized to a null path.
- * i.e. just like the "episilon" paths from the book.
+ * The parent Path object. It is initalized to a null path. i.e. just like the
+ * "episilon" paths from the book.
+ * 
  * @author Doug
- *
+ * 
  */
 class Path {
 	Node destination;
@@ -576,10 +650,11 @@ class Path {
 }
 
 /**
- * This path accepts any characters in the given input string.
- * i.e. if constructed with string: "b", it will accept "b".
+ * This path accepts any characters in the given input string. i.e. if
+ * constructed with string: "b", it will accept "b".
+ * 
  * @author Doug
- *
+ * 
  */
 class CharacterPath extends Path {
 	String accepted;
@@ -599,11 +674,11 @@ class CharacterPath extends Path {
 }
 
 /**
- * This path accetps the converse of a given string.
- * i.e. if constructed with string: "a", it will accept
- * every other string.
+ * This path accetps the converse of a given string. i.e. if constructed with
+ * string: "a", it will accept every other string.
+ * 
  * @author Doug
- *
+ * 
  */
 class ConversePath extends Path {
 	String notAccepted;
@@ -623,9 +698,10 @@ class ConversePath extends Path {
 }
 
 /**
- * This path accepts anything. 
+ * This path accepts anything.
+ * 
  * @author Doug
- *
+ * 
  */
 class AnythingPath extends Path {
 	public AnythingPath() {
@@ -643,8 +719,9 @@ class AnythingPath extends Path {
 
 /**
  * This path accepts a range of values between two chars.
+ * 
  * @author Doug
- *
+ * 
  */
 class RangePath extends Path {
 	char start, end;
@@ -666,30 +743,30 @@ class RangePath extends Path {
 
 class ConverseRangePath extends Path {
 	char start, end;
-	
+
 	public ConverseRangePath(char start, char end) {
 		this.start = start;
 		this.end = end;
 		this.nullPath = false;
 	}
-	
-	public boolean matches (char c) {
+
+	public boolean matches(char c) {
 		return !(c >= start && c <= end);
 	}
-	
+
 	public String toString() {
 		return "ConverseRangePath accepting not in: " + start + "-" + end;
 	}
 }
 
 /**
- * This class is a section of a finite state automata. It's basically
- * a wrapper for a series of nodes and paths. It just houses and start
- * and end of a given section. All it stores is a start node and an end node. 
- * When construction, paths and other automata are added between it's inNode
- * and outNode.
+ * This class is a section of a finite state automata. It's basically a wrapper
+ * for a series of nodes and paths. It just houses and start and end of a given
+ * section. All it stores is a start node and an end node. When construction,
+ * paths and other automata are added between it's inNode and outNode.
+ * 
  * @author Doug
- *
+ * 
  */
 class Automata {
 	Node inNode;
@@ -707,26 +784,26 @@ class Automata {
 
 	/**
 	 * Adds a path between in and out nodes.
+	 * 
 	 * @param path
 	 */
 	public void setInteriorPath(Path path) {
-        /*for (Path pafth : this.inNode.paths) {
-            if (pafth.destination.equals(this.outNode)) {
-                this.inNode.paths.remove(pafth);
-            }
-        }*/
+		/*
+		 * for (Path pafth : this.inNode.paths) { if
+		 * (pafth.destination.equals(this.outNode)) {
+		 * this.inNode.paths.remove(pafth); } }
+		 */
 		path.destination = this.outNode;
 		this.inNode.addPath(path);
 	}
 
-	
 	/**
 	 * Connects this automata to the given one by simply adding a null path
 	 * between it's outNode and the given Automata's inNode.
+	 * 
 	 * @param outAutomata
 	 */
 	public void connectToAutomata(Automata outAutomata) {
 		this.outNode.connect(outAutomata.inNode);
 	}
 }
-
