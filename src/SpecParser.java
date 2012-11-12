@@ -36,7 +36,7 @@ public class SpecParser {
 	 */
 	public HashMap<String, NFA> parseFile(String filename) {
 		specDefinitions = readFile(filename);
-		System.out.println("BEGIN PREPROCESSING...");
+//		System.out.println("BEGIN PREPROCESSING...");
 		for (Map.Entry<String, String> specEntry : specDefinitions.entrySet()) {
 			String entry = specEntry.getKey();
 			String definition = specEntry.getValue().trim();
@@ -139,7 +139,7 @@ public class SpecParser {
 	 * definition).
 	 */
 	public HashMap<String, String> readFile(String filename) {
-		System.out.println("Reading file...");
+//		System.out.println("Reading file...");
 		HashMap<String, String> specDefinitions = new HashMap<String, String>();
 		try {
 			FileInputStream fstream = new FileInputStream(filename);
@@ -151,7 +151,7 @@ public class SpecParser {
 				String[] splitString = strLine.split(" ", 2);
 				if (splitString.length > 1) {
 					specDefinitions.put(splitString[0], splitString[1]);
-					System.out.println("Entry: " + splitString[0] + ". Value: " + splitString[1]);
+//					System.out.println("Entry: " + splitString[0] + ". Value: " + splitString[1]);
 				}
 			}
 
@@ -163,7 +163,7 @@ public class SpecParser {
 			System.out.println("Couldn't read file.");
 			e.printStackTrace();
 		}
-		System.out.println("=========Done reading file==========");
+//		System.out.println("=========Done reading file==========");
 		return specDefinitions;
 	}
 

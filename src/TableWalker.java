@@ -30,8 +30,10 @@ public class TableWalker {
 	}
 	
 	public static void main (String args[]) {
+		
 		TableWalker tw = new TableWalker("src/spec.txt", "src/program.txt");
 		
+		/* The set of test strings */
 		String[] testStrings = {"a", "1", "1.1", "abac", "+", "-", "*", "=", "PRINT"};
 		
 		
@@ -50,17 +52,24 @@ public class TableWalker {
 			for (int i = 0; i < test.length(); i++) {
 				char c = test.charAt(i);
 				
+				/* We have to use an iterator or we'll run into ConcurrentModificationException */
 				Iterator<Map.Entry<String, NFA>> entries = acceptingNFAs.entrySet().iterator();
 				while (entries.hasNext()) {
 					Map.Entry<String, NFA> specNFA = entries.next();
 					
 					String entry = specNFA.getKey();
 					NFA nfa = specNFA.getValue();
+					
+					/* Give this NFA this character */
 					nfa.step(c);
+				
+					/* If it's not accepting, kick it out of our acceptingNFAs set */
 					if (!nfa.accepting) {
 						entries.remove();
 					}
 				}
+				
+				/* This is bad logic. It pretends that the last remaining NFA has accepted this string. */
 				if (acceptingNFAs.size() == 1) {
 					for (Map.Entry<String, NFA> entry : acceptingNFAs.entrySet()) {
 						System.out.println(test + " was last accepted by: " + entry.getKey());
@@ -70,16 +79,6 @@ public class TableWalker {
 			}
 		}
 		
-	}
-
-
-	private void parseTokens(String strLine) {
-		// check current input stream against
-		// DFA to find tokens
-	}
-	
-	private void gotToken(Token token) {
-		System.out.println("Got token! Of type: " + token.getType());
 	}
 
 }
