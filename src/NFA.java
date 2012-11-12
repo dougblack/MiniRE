@@ -388,31 +388,6 @@ public class NFA {
 
 	
 	/**
-	 * This method DOES NOT WORK YET. Once finished, it will process a character class, including a range.
-	 * Yes, it's poorly named.
-	 * @param regex
-	 * @param start
-	 * @param end
-	 * @return
-	 */
-	public static Automata regexToRangeAutomata(String regex, int start, int end) {
-		String target = regex.substring(start, end);
-		System.out.println("Processing brackets: " + target);
-		int dashes = 0;
-		for (int i = 0; i < target.length(); i++) {
-			if (target.charAt(i) == '-') {
-				char startChar = target.charAt(i - 1);
-				char endChar = target.charAt(i + 1);
-				dashes++;
-				System.out.println("Dash found.\nFirst char: " + startChar + ". End char: " + endChar);
-
-				break;
-			}
-		}
-		return null;
-	}
-	
-	/**
 	 * This method tests if the NFA accepts the given string. It does the extra
 	 * credit NFA traversal.
 	 * @param automata
