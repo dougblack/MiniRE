@@ -52,6 +52,7 @@ public class Lexer {
 			case '%':
 				
 		}
+		return current;
 	}
 	//from my prev code
 	/*

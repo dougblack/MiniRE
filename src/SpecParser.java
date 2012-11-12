@@ -37,12 +37,60 @@ public class SpecParser {
 			String entry = specEntry.getKey();
 			String definition = specEntry.getValue();
 			if (!definition.contains("$")) {
-				//specNFAs.put(entry, new NFA(definition));
+				specNFAs.put(entry, new NFA(definition));
 				System.out.println("Added definition for token \"" + entry + "\": " + definition);
-			} else if (definition.contains("IN")) {
-				System.out.println("Need to check inclusion for token \"" + entry + "\": " + definition);
-			} else {
-				System.out.println("Need to do substition for token \"" + entry + "\": " + definition);
+			} 
+		}
+		
+		for (Map.Entry<String, String> specEntry : specDefinitions.entrySet()) {
+			String entry = specEntry.getKey();
+			String definition = specEntry.getValue();
+			String target = "";
+			String excludeRule = "";
+			String targetDefinition = "";
+			if (definition.contains("IN")) {
+				String[] splitDefinition = definition.split(" IN ", 2);
+				excludeRule = splitDefinition[0].trim();
+				target = splitDefinition[1].trim();
+				
+				// sanity check
+				assert(specNFAs.containsKey(target));
+				targetDefinition = specDefinitions.get(target);
+				if (targetDefinition.contains("-")) {
+					
+				} else {
+					
+				}
+				
+			}
+		}
+		
+		for (Map.Entry<String, String> specEntry : specDefinitions.entrySet()) {
+			String entry = specEntry.getKey();
+			String definition = specEntry.getValue();
+			if (!definition.contains("IN")) {
+				int tokenStart = -1;
+				int tokenEnd = -1;
+				boolean inToken = false;
+				char currentChar;
+				String token = "";
+				for (int i=0; i < definition.length(); i++) {
+					currentChar = definition.charAt(i);
+					if (currentChar == '$') {
+						inToken = true;
+						tokenStart = i;
+						token = token+"$";
+					} else if (inToken && Character.isLetter(currentChar)) {
+						token = token+=currentChar;
+					} else if (inToken) {
+						inToken = false;
+						tokenEnd = i;
+						System.out.println(definition);
+						if (specNFAs.containsKey(token)) 
+							System.out.println("After replacement: " + definition.replace(token, specDefinitions.get(token)));
+						token ="";
+					}
+				}
 			}
 		}
 		

@@ -58,7 +58,7 @@ public class NFA {
 
 	public static Automata regexToAutomata(String regex) {
 		regex = preprocessCharacterClasses(regex);
-		System.out.println("Preprocessed: " + regex);
+//		System.out.println("Preprocessed: " + regex);
 		return regexToAutomataHelper(regex, 0, regex.length());
 	}
 	
@@ -81,7 +81,7 @@ public class NFA {
 						}
 						break;
 					} else if (nextChar == '-') {
-						System.out.println("Range.");
+//						System.out.println("Range.");
 						if (bracketTargetChar != '|')
 							regex = new StringBuffer(regex).insert(x+3, '|').toString();
 						else 
@@ -145,12 +145,12 @@ public class NFA {
 			char currentChar = regex.charAt(i);
 
 			if (currentChar == '\\' && !escaped) { // Escape character. Set escaped flag for next character. escaped = true;
-				System.out.println("Escape encountered.");
+//				System.out.println("Escape encountered.");
 				escaped = true;
 				continue;
 			}
 			if (escaped) { // Character is escaped. So add a CharacterPath accepting just that character.
-				System.out.println("Adding escaped character: " + currentChar);
+//				System.out.println("Adding escaped character: " + currentChar);
 				Automata next = new Automata();
 				next.setInteriorPath(new CharacterPath("" + currentChar));
 				Automata last = automataStack.peek();
