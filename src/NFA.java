@@ -1,10 +1,13 @@
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Stack;
+import java.util.TreeSet;
 
 public class NFA {
 	
 	Automata thisNFA;
 	String thisRegex;
+    static HashSet<Node> nodes;
 
 	public static void main(String args[]) {
 
@@ -34,6 +37,7 @@ public class NFA {
 	}
 	
 	public NFA(String regex) {
+        nodes = new HashSet<Node>();
 		thisRegex = regex;
 		thisNFA = regexToAutomata(regex);
 		thisNFA.outNode.setEnd();
@@ -137,6 +141,9 @@ public class NFA {
 		boolean escaped = false;
 		Automata root = new Automata();
 		root.inNode.connect(root.outNode);
+        // store all nodes for use in DFA.java
+        nodes.add(root.inNode);
+        nodes.add(root.outNode);
 		Stack<Automata> automataStack = new Stack<Automata>();
 		automataStack.push(root);
 
@@ -152,16 +159,29 @@ public class NFA {
 			if (escaped) { // Character is escaped. So add a CharacterPath accepting just that character.
 //				System.out.println("Adding escaped character: " + currentChar);
 				Automata next = new Automata();
-				next.setInteriorPath(new CharacterPath("" + currentChar));
+				next.setInteriorPath(new CharacterPath("" + currentChar));;
 				Automata last = automataStack.peek();
 				last.connectToAutomata(next);
 				automataStack.push(next);
+
+                // store all nodes, removing any older versions that may exist
+                nodes.add(next.inNode);
+                nodes.add(next.outNode);
+                nodes.remove(last.outNode);
+                nodes.add(last.outNode);
+
 			} else if (currentChar == '.') { // Wildcard character. Add AnythingPath.
 //				System.out.println("Wildcard. Adding anything path.");
 				Automata next = new Automata();
 				next.setInteriorPath(new AnythingPath());
 				Automata last = automataStack.peek();
 				last.connectToAutomata(next);
+
+                // store next's nodes, replace last's old outNode
+                nodes.add(next.inNode);
+                nodes.add(next.outNode);
+                nodes.remove(last.outNode);
+                nodes.add(last.outNode);
 				automataStack.push(next);
 			} 
 			/*	 Star character. Connect beginning and end of last automata to make two-way loop.*/
@@ -170,11 +190,23 @@ public class NFA {
 				Automata last = automataStack.peek();
 				last.inNode.connect(last.outNode);
 				last.outNode.connect(last.inNode);
+
+                // replace last's old nodes in the list
+                nodes.remove(last.inNode);
+                nodes.add(last.inNode);
+                nodes.remove(last.outNode);
+                nodes.add(last.outNode);
 			} 
 			 /* Repeat character. Connect end to beginning to make loop */
 			else if (currentChar == '+') {
 				Automata last = automataStack.peek();
 				last.outNode.connect(last.inNode);
+
+                // replace last's old nodes in the list
+                nodes.remove(last.inNode);
+                nodes.add(last.inNode);
+                nodes.remove(last.outNode);
+                nodes.add(last.outNode);
 			} 
 			/* Or character. Separate options and make null edges to both. */
 			else if (currentChar == '|') { 
@@ -190,6 +222,20 @@ public class NFA {
 				optionB.outNode.connect(automata.outNode);
 				optionA.outNode.connect(automata.outNode);
 
+                // store all nodes, removing any older versions that may exist
+                nodes.remove(optionA.inNode);
+                nodes.add(optionA.inNode);
+                nodes.remove(optionA.outNode);
+                nodes.add(optionA.outNode);
+                nodes.remove(optionB.inNode);
+                nodes.add(optionB.inNode);
+                nodes.remove(optionB.outNode);
+                nodes.add(optionB.outNode);
+                nodes.remove(automata.inNode);
+                nodes.add(automata.inNode);
+                nodes.remove(automata.outNode);
+                nodes.add(automata.outNode);
+
 				automataStack.push(automata);
 				break;
 
@@ -203,6 +249,16 @@ public class NFA {
 				last.connectToAutomata(insideAutomata);
 				automataStack.push(insideAutomata);
 				i = closingIndex;
+
+                // store all nodes, removing any older versions that may exist
+                nodes.remove(insideAutomata.inNode);
+                nodes.add(insideAutomata.inNode);
+                nodes.remove(insideAutomata.outNode);
+                nodes.add(insideAutomata.outNode);
+                nodes.remove(last.inNode);
+                nodes.add(last.inNode);
+                nodes.remove(last.outNode);
+                nodes.add(last.outNode);
 			} else if (currentChar == '[') { // Character class begins.
 				int closingIndex = indexOfClosing(regex, i + 1, end, '[');
 //				System.out.println("Bracket. Building automata for " + regex.substring(i, closingIndex + 1));
@@ -211,6 +267,16 @@ public class NFA {
 				last.connectToAutomata(rangeAutomata);
 				automataStack.push(rangeAutomata);
 				i = closingIndex;
+
+                // store all nodes, removing any older versions that may exist
+                nodes.remove(rangeAutomata.inNode);
+                nodes.add(rangeAutomata.inNode);
+                nodes.remove(rangeAutomata.outNode);
+                nodes.add(rangeAutomata.outNode);
+                nodes.remove(last.inNode);
+                nodes.add(last.inNode);
+                nodes.remove(last.outNode);
+                nodes.add(last.outNode);
 			} else if (currentChar == '^' && i+2 < end && regex.charAt(i+2) == '-') {
 //				System.out.println("Caret. Building InversePath automata for range.");
 				Automata inverseAutomata = new Automata();
@@ -219,6 +285,16 @@ public class NFA {
 				last.connectToAutomata(inverseAutomata);
 				automataStack.push(inverseAutomata);
 				i = i+3;
+
+                // store all nodes, removing any older versions that may exist
+                nodes.remove(inverseAutomata.inNode);
+                nodes.add(inverseAutomata.inNode);
+                nodes.remove(inverseAutomata.outNode);
+                nodes.add(inverseAutomata.outNode);
+                nodes.remove(last.inNode);
+                nodes.add(last.inNode);
+                nodes.remove(last.outNode);
+                nodes.add(last.outNode);
 			} else if (currentChar == '^') {
 				Automata inverseAutomata = new Automata();
 				if (regex.charAt(i+1) == '(') {
@@ -235,6 +311,17 @@ public class NFA {
 				Automata last = automataStack.peek();
 				last.connectToAutomata(inverseAutomata);
 				automataStack.push(inverseAutomata);
+
+                // store all nodes, removing any older versions that may exist
+                nodes.remove(inverseAutomata.inNode);
+                nodes.add(inverseAutomata.inNode);
+                nodes.remove(inverseAutomata.outNode);
+                nodes.add(inverseAutomata.outNode);
+                nodes.remove(last.inNode);
+                nodes.add(last.inNode);
+                nodes.remove(last.outNode);
+                nodes.add(last.outNode);
+
 			} else if (i+1 < end && regex.charAt(i+1) == '-') {
 //				System.out.println("Dash is next. Adding RangePath for " + currentChar + "-" + regex.charAt(i+2));
 				Automata next = new Automata();
@@ -243,6 +330,16 @@ public class NFA {
 				last.connectToAutomata(next);
 				automataStack.push(next);
 				i = i+2;
+
+                // store all nodes, removing any older versions that may exist
+                nodes.remove(next.inNode);
+                nodes.add(next.inNode);
+                nodes.remove(next.outNode);
+                nodes.add(next.outNode);
+                nodes.remove(last.inNode);
+                nodes.add(last.inNode);
+                nodes.remove(last.outNode);
+                nodes.add(last.outNode);
 			} else { // Just a random character. Accept it.
 //				System.out.println("Random character. Adding CharacterPath for: " + currentChar);
 				Automata next = new Automata();
@@ -250,6 +347,16 @@ public class NFA {
 				Automata last = automataStack.peek();
 				last.connectToAutomata(next);
 				automataStack.push(next);
+
+                // store all nodes, removing any older versions that may exist
+                nodes.remove(next.inNode);
+                nodes.add(next.inNode);
+                nodes.remove(next.outNode);
+                nodes.add(next.outNode);
+                nodes.remove(last.inNode);
+                nodes.add(last.inNode);
+                nodes.remove(last.outNode);
+                nodes.add(last.outNode);
 			}
 
 			escaped = false;
@@ -388,6 +495,30 @@ public class NFA {
 		return blankSpan;
 	}
 
+    public Node getStartNode() {
+        return thisNFA.inNode;
+    }
+
+    public Node getAcceptingNode() {
+        return thisNFA.outNode;
+    }
+
+    public HashSet<Node> getNodes() {
+        return nodes;
+    }
+
+    public TreeSet<Character> getAlphabet() {
+        TreeSet<Character> alphabet = new TreeSet<Character>();
+        for (char c = 32; c < 127; c++) {
+            for (Node node : nodes) {
+                if (node.accepts(c)) {
+                    alphabet.add(c);
+                }
+            }
+        }
+        return alphabet;
+    }
+
 }
 
 /**
@@ -422,6 +553,25 @@ class Node {
 	public void setEnd() {
 		end = true;
 	}
+
+    public HashSet<Node> getNextNodesFor(char c) {
+        HashSet<Node> nodes = new HashSet<Node>();
+        for (Path path : paths) {
+            if (path.matches(c)) {
+                nodes.add(path.destination);
+            }
+        }
+        return nodes;
+    }
+
+    public boolean accepts (char c) {
+        for (Path path : paths) {
+            if (path.matches(c)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
 
 /**
@@ -584,6 +734,11 @@ class Automata {
 	 * @param path
 	 */
 	public void setInteriorPath(Path path) {
+        /*for (Path pafth : this.inNode.paths) {
+            if (pafth.destination.equals(this.outNode)) {
+                this.inNode.paths.remove(pafth);
+            }
+        }*/
 		path.destination = this.outNode;
 		this.inNode.addPath(path);
 	}
@@ -597,5 +752,5 @@ class Automata {
 	public void connectToAutomata(Automata outAutomata) {
 		this.outNode.connect(outAutomata.inNode);
 	}
-
 }
+
