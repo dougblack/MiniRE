@@ -407,6 +407,7 @@ public class NFA {
 
 		return occupiedNodeSet.contains(end);
 	}
+	
 
 	/**
 	 * This method "steps" through the automata by following the rules of NFA.

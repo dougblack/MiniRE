@@ -36,11 +36,12 @@ public class SpecParser {
 	 */
 	public HashMap<String, NFA> parseFile(String filename) {
 		specDefinitions = readFile(filename);
+		System.out.println("BEGIN PREPROCESSING...");
 		for (Map.Entry<String, String> specEntry : specDefinitions.entrySet()) {
 			String entry = specEntry.getKey();
 			String definition = specEntry.getValue().trim();
 			if (definition.equals("-")) {
-				System.out.println("Found minus.");
+//				System.out.println("Found minus.");
 				definition = "\\-";
 				specDefinitions.put(entry, definition);
 			}
@@ -117,10 +118,10 @@ public class SpecParser {
 						token = token += currentChar;
 					} else if (inToken) {
 						inToken = false;
-						System.out.println(definition);
+//						System.out.println(definition);
 						if (specNFAs.containsKey(token)) {
 							definition = definition.replace(token, specDefinitions.get(token));
-							System.out.println("After replacement: " + definition);
+//							System.out.println("After replacement: " + definition);
 							specDefinitions.put(entry, definition);
 							specNFAs.put(entry, new NFA(definition));
 						}
@@ -130,7 +131,7 @@ public class SpecParser {
 			}
 		}
 
-		return null;
+		return specNFAs;
 	}
 
 	/*
@@ -138,6 +139,7 @@ public class SpecParser {
 	 * definition).
 	 */
 	public HashMap<String, String> readFile(String filename) {
+		System.out.println("Reading file...");
 		HashMap<String, String> specDefinitions = new HashMap<String, String>();
 		try {
 			FileInputStream fstream = new FileInputStream(filename);
@@ -149,7 +151,7 @@ public class SpecParser {
 				String[] splitString = strLine.split(" ", 2);
 				if (splitString.length > 1) {
 					specDefinitions.put(splitString[0], splitString[1]);
-//					System.out.println(splitString[0] + ", " + splitString[1]);
+					System.out.println("Entry: " + splitString[0] + ". Value: " + splitString[1]);
 				}
 			}
 
@@ -161,6 +163,7 @@ public class SpecParser {
 			System.out.println("Couldn't read file.");
 			e.printStackTrace();
 		}
+		System.out.println("=========Done reading file==========");
 		return specDefinitions;
 	}
 
