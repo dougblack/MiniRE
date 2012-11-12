@@ -9,18 +9,20 @@ import java.util.Stack;
 public class DFA {
 
     private SetAutomata sMata;
+    private String regex;
 
 	public DFA(NFA nfa) {
         sMata = new SetAutomata();
 
 		if (nfa != null) {
             buildFromNFA(nfa);
+            regex = nfa.thisRegex;
         }
 	}
 
 	public static void main(String args[]) {
 
-		/*NFA nfa1 = new NFA("(a|b)*\\.(b|c)*");
+		NFA nfa1 = new NFA("(a|b)*\\.(b|c)*");
         DFA dfa1 = new DFA(nfa1);
         //dfa1.printStructure();
         dfa1.testDFA("ab.bc", "aa.ba", ".bb", "abaabab.cbcbc");
@@ -58,21 +60,21 @@ public class DFA {
 		NFA nfa8 = new NFA("a(|z)");
         DFA dfa8 = new DFA(nfa8);
         //dfa8.printStructure();
-        dfa8.testDFA("a", "az", "", " ");*/
+        dfa8.testDFA("a", "az", "", " ");
 	}
 
     public boolean testString(String string) {
         State currentState = sMata.startState;
         char c;
-        System.out.print("Printing the characters as encountered: ");
+//        System.out.print("Printing the characters as encountered: ");
         for (int i = 0; i < string.length(); i++) {
             c = string.charAt(i);
-            System.out.print(c);
+//            System.out.print(c);
 
             if (!currentState.accepts(c)) {
-                System.out.println("\n did not accept '" + c + "'. Only accepts: ");
+//                System.out.println("\n did not accept '" + c + "'. Only accepts: ");
                 for (Character ch : currentState.transitions.keySet()) {
-                    System.out.print(ch + " ");
+//                    System.out.print(ch + " ");
                 }
                 return false;
             }
@@ -82,12 +84,13 @@ public class DFA {
     }
 	
 	public void testDFA(String ...strings) {
+		System.out.println("Starting new DFA with regex: " + this.regex);
 		boolean matches = false;
 		String result = "";
 		for (int i = 0; i < strings.length; i++) {
 			matches = testString(strings[i]);
 			
-			result = "\nTest: \"" + strings[i] + "\" was";
+			result = "Test: \"" + strings[i] + "\" was";
 			if (!matches) {
 				result += " not";
             }
