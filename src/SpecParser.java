@@ -36,18 +36,15 @@ public class SpecParser {
 	 */
 	public HashMap<String, NFA> parseFile(String filename) {
 		specDefinitions = readFile(filename);
-//		System.out.println("BEGIN PREPROCESSING...");
 		for (Map.Entry<String, String> specEntry : specDefinitions.entrySet()) {
 			String entry = specEntry.getKey();
 			String definition = specEntry.getValue().trim();
 			if (definition.equals("-")) {
-//				System.out.println("Found minus.");
 				definition = "\\-";
 				specDefinitions.put(entry, definition);
 			}
 			if (!definition.contains("$")) {
 				specNFAs.put(entry, new NFA(definition));
-//				System.out.println("Added definition for token \"" + entry + "\": " + definition);
 			}
 		}
 
@@ -91,8 +88,6 @@ public class SpecParser {
 										replaceString);
 								specDefinitions.put(entry, newDefinition);
 								specNFAs.put(entry, new NFA(newDefinition));
-								// System.out.println("Replaced \"" + rangeStart
-								// + "-" + rangeEnd + " with " +replaceString);
 							}
 						}
 
@@ -100,9 +95,6 @@ public class SpecParser {
 					}
 				}
 			}
-		}
-		for (Map.Entry<String, NFA> specNFA : specNFAs.entrySet()) {
-			System.out.println("|" + specNFA.getKey() + "|");
 		}
 		for (Map.Entry<String, String> specEntry : specDefinitions.entrySet()) {
 			String entry = specEntry.getKey();
@@ -123,7 +115,6 @@ public class SpecParser {
 	 * definition).
 	 */
 	public HashMap<String, String> readFile(String filename) {
-		// System.out.println("Reading file...");
 		HashMap<String, String> specDefinitions = new HashMap<String, String>();
 		try {
 			FileInputStream fstream = new FileInputStream(filename);
@@ -133,10 +124,8 @@ public class SpecParser {
 
 			while ((strLine = br.readLine()) != null) {
 				String[] splitString = strLine.split(" ", 2);
-				if (splitString.length > 1) {
+				if (splitString.length > 1 && !splitString[0].contains("%%")) {
 					specDefinitions.put(splitString[0], splitString[1]);
-					// System.out.println("Entry: " + splitString[0] +
-					// ". Value: " + splitString[1]);
 				}
 			}
 
@@ -148,7 +137,6 @@ public class SpecParser {
 			System.out.println("Couldn't read file.");
 			e.printStackTrace();
 		}
-		// System.out.println("=========Done reading file==========");
 		return specDefinitions;
 	}
 
