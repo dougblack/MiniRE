@@ -25,32 +25,32 @@ public class DFA {
 		NFA nfa1 = new NFA("(a|b)*\\.(b|c)*");
         DFA dfa1 = new DFA(nfa1);
         //dfa1.printStructure();
-        dfa1.testDFA("ab.bc", "aa.ba", ".bb", "abaabab.cbcbc");
+        dfa1.testDFA("", ".", "ab.bc", "aa.ba", ".bb", "abaabab.cbcbc");
 		
 		NFA nfa2 = new NFA(".");
         DFA dfa2 = new DFA(nfa2);
         //dfa2.printStructure();
-        dfa2.testDFA("ab.", "..", ".bb", "abaabab.cbcbc");
+        dfa2.testDFA("", "ab.", "..", ".", "9", "S", ".bb", "abaabab.cbcbc");
 		
 		NFA nfa3 = new NFA("(ab)*");
         DFA dfa3 = new DFA(nfa3);
         //dfa3.printStructure();
-        dfa3.testDFA("ab.bc", "aaba", "ababab", "aba");
+        dfa3.testDFA("", "ab.bc", "aaba", "ababab", "aba");
 		
 		NFA nfa4 = new NFA("(dougblack)+");
         DFA dfa4 = new DFA(nfa4);
         //dfa4.printStructure();
-        dfa4.testDFA("(dougblack)+", "(dougblack)", "dougblack");
+        dfa4.testDFA("(dougblack)+", "(dougblack)", "dougblack", "dougblackdougblach", "dougblackdougblack");
 		
 		NFA nfa5 = new NFA("[0-9]*");
         DFA dfa5 = new DFA(nfa5);
         //dfa5.printStructure();
-        dfa5.testDFA("0", "4", "9", "00009", "00", "11", "999999999");
+        dfa5.testDFA("", "0", "4", "9", "00009", "00", "11", "9999S9999");
 		
 		NFA nfa6 = new NFA("[^a]*");
         DFA dfa6 = new DFA(nfa6);
         //dfa6.printStructure();
-        dfa6.testDFA("aa", "a", "b", "A", "asd a ", " a");
+        dfa6.testDFA("", "aa", "a", "b", "A", "asd a ", " a");
 		
 		NFA nfa7 = new NFA("");
         DFA dfa7 = new DFA(nfa7);
@@ -60,12 +60,13 @@ public class DFA {
 		NFA nfa8 = new NFA("a(|z)");
         DFA dfa8 = new DFA(nfa8);
         //dfa8.printStructure();
-        dfa8.testDFA("a", "az", "", " ");
+        dfa8.testDFA("a", "az", "", " ", "z", "b4", "9");
 	}
 
     public boolean testString(String string) {
         State currentState = sMata.startState;
         char c;
+        boolean result = false;
 //        System.out.print("Printing the characters as encountered: ");
         for (int i = 0; i < string.length(); i++) {
             c = string.charAt(i);
@@ -80,11 +81,14 @@ public class DFA {
             }
             currentState = currentState.nextState(c);
         }
-        return true;
+        if (sMata.acceptStates.contains(currentState)) {
+            result = true;
+        }
+        return result;
     }
 	
 	public void testDFA(String ...strings) {
-		System.out.println("Starting new DFA with regex: " + this.regex);
+		System.out.println("Starting new DFA with regex: \"" + this.regex + "\""); // quotes are necessary to identify the empty string
 		boolean matches = false;
 		String result = "";
 		for (int i = 0; i < strings.length; i++) {
