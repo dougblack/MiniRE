@@ -175,17 +175,24 @@ public class SpecParser {
 
 	public String excludeRange(char excludeStart, char excludeEnd, char rangeStart, char rangeEnd) {
 		String fixedRange = "";
+		
+		// Ranges are the same
 		if (excludeStart == rangeStart && excludeEnd == rangeEnd) {
 			return fixedRange;
 		}
-		if (excludeStart == rangeStart) {
-			fixedRange = Character.valueOf((char) (rangeStart + 1)) + "-" + rangeEnd;
+		// Left contained
+		else if (excludeStart <= rangeStart && excludeEnd < rangeEnd) {
+			fixedRange = "" + Character.valueOf((char) (excludeEnd + 1)) + "-" + rangeEnd; 
+		} 
+		// Right contained
+		else if (excludeStart > rangeStart && excludeEnd >= rangeEnd) {
+			fixedRange = "" + rangeStart + "-" + Character.valueOf((char) (excludeStart -1));
 		}
-		if (rangeIsInRange(excludeStart, excludeEnd, rangeStart, rangeEnd)) {
-			fixedRange = rangeStart + "-" + Character.valueOf((char) (excludeStart - 1))
-					+ Character.valueOf((char) (excludeEnd + 1)) + "-" + rangeEnd;
+		// Fully contained
+		else if (excludeStart > rangeStart && excludeEnd < rangeEnd) {
+			fixedRange = "" + Character.valueOf((char) (rangeStart-1)) + "-" + Character.valueOf((char) (excludeStart+1)) + excludeEnd + "-" + rangeEnd;
 		}
 		return fixedRange;
-	}
+	}	
 
 }
