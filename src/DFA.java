@@ -40,7 +40,7 @@ public class DFA {
 		NFA nfa4 = new NFA("(dougblack)+");
         DFA dfa4 = new DFA(nfa4);
         //dfa4.printStructure();
-        dfa4.testDFA("(dougblack)+", "(dougblack)", "dougblack", "dougblackdougblach", "dougblackdougblack");
+        dfa4.testDFA("", "(dougblack)+", "(dougblack)", "dougblack", "dougblackdougblach", "dougblackdougblack");
 		
 		NFA nfa5 = new NFA("[0-9]*");
         DFA dfa5 = new DFA(nfa5);
@@ -67,16 +67,10 @@ public class DFA {
         State currentState = sMata.startState;
         char c;
         boolean result = false;
-//        System.out.print("Printing the characters as encountered: ");
         for (int i = 0; i < string.length(); i++) {
             c = string.charAt(i);
-//            System.out.print(c);
 
             if (!currentState.accepts(c)) {
-//                System.out.println("\n did not accept '" + c + "'. Only accepts: ");
-                for (Character ch : currentState.transitions.keySet()) {
-//                    System.out.print(ch + " ");
-                }
                 return false;
             }
             currentState = currentState.nextState(c);
@@ -141,7 +135,7 @@ public class DFA {
         HashSet<Node> currentState, nextState;
         HashMap<Node, HashSet<Node>> epsilonClosures;
         Stack<HashSet<Node>> stack;
-        HashSet<HashSet<Node>> visitedStates;
+        HashSet<HashSet<Node>> visitedStates, possibleAcceptStates;
         TreeSet<Character> alphabet;
         Iterator<Node> nextNfaNodes, nextDfaNodes;
         Node node;
@@ -154,6 +148,7 @@ public class DFA {
         currentState = epsilonClosures.get(nfa.getStartNode());
         stack = new Stack<HashSet<Node>>();
         visitedStates = new HashSet<HashSet<Node>>();
+        possibleAcceptStates = new HashSet<HashSet<Node>>();
 
         stack.push(currentState);
         visitedStates.add(currentState);
@@ -198,6 +193,10 @@ public class DFA {
                     acceptState = false;
                 }
             }
+        }
+        // Ensure empty string is accepted
+        if (epsilonClosures.get(nfa.getStartNode()).contains(nfa.getAcceptingNode())) {
+            sMata.setAccepting(epsilonClosures.get(nfa.getStartNode()));
         }
 	}
 
