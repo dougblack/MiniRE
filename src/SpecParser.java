@@ -14,7 +14,7 @@ public class SpecParser {
 
 	public static void main(String args[]) {
 		SpecParser sp = new SpecParser();
-		sp.parseFile("src/spec.txt");
+		sp.parseFile("src/spec2.txt");
 		for (Map.Entry<String, String> specEntry : sp.specDefinitions.entrySet()) {
 			System.out.println("Entry: " + specEntry.getKey() + ". Value: " + specEntry.getValue());
 		}
@@ -26,10 +26,10 @@ public class SpecParser {
 	}
 
 	/**
-	 * This method runs through the HashMap and reduces each
-	 * definition to just straight regex and then builds NFA's out of that
-	 * regex. It requires substituting in the regex from other token definitions
-	 * and calculating inclusion principles. (i.e. [^A-Z] IN $ALPHA).
+	 * This method runs through the HashMap and reduces each definition to just
+	 * straight regex and then builds NFA's out of that regex. It requires
+	 * substituting in the regex from other token definitions and calculating
+	 * inclusion principles. (i.e. [^A-Z] IN $ALPHA).
 	 * 
 	 * @param filename
 	 * @return
@@ -101,32 +101,16 @@ public class SpecParser {
 				}
 			}
 		}
-
+		for (Map.Entry<String, NFA> specNFA : specNFAs.entrySet()) {
+			System.out.println("|" + specNFA.getKey() + "|");
+		}
 		for (Map.Entry<String, String> specEntry : specDefinitions.entrySet()) {
 			String entry = specEntry.getKey();
 			String definition = specEntry.getValue();
 			if (!definition.contains(" IN ")) {
-				boolean inToken = false;
-				char currentChar;
-				String token = "";
-				for (int i = 0; i < definition.length(); i++) {
-					currentChar = definition.charAt(i);
-					if (currentChar == '$') {
-						inToken = true;
-						token = token + "$";
-					} else if (inToken && Character.isLetter(currentChar)) {
-						token = token += currentChar;
-					} else if (inToken) {
-						inToken = false;
-//						System.out.println(definition);
-						if (specNFAs.containsKey(token)) {
-							definition = definition.replace(token, specDefinitions.get(token));
-//							System.out.println("After replacement: " + definition);
-							specDefinitions.put(entry, definition);
-							specNFAs.put(entry, new NFA(definition));
-						}
-						token = "";
-					}
+				for (Map.Entry<String, String> specEntryTarget : specDefinitions.entrySet()) {
+					definition = definition.replace(specEntryTarget.getKey(), specEntryTarget.getValue());
+					specDefinitions.put(entry, definition);
 				}
 			}
 		}
@@ -139,7 +123,7 @@ public class SpecParser {
 	 * definition).
 	 */
 	public HashMap<String, String> readFile(String filename) {
-//		System.out.println("Reading file...");
+		// System.out.println("Reading file...");
 		HashMap<String, String> specDefinitions = new HashMap<String, String>();
 		try {
 			FileInputStream fstream = new FileInputStream(filename);
@@ -151,7 +135,8 @@ public class SpecParser {
 				String[] splitString = strLine.split(" ", 2);
 				if (splitString.length > 1) {
 					specDefinitions.put(splitString[0], splitString[1]);
-//					System.out.println("Entry: " + splitString[0] + ". Value: " + splitString[1]);
+					// System.out.println("Entry: " + splitString[0] +
+					// ". Value: " + splitString[1]);
 				}
 			}
 
@@ -163,7 +148,7 @@ public class SpecParser {
 			System.out.println("Couldn't read file.");
 			e.printStackTrace();
 		}
-//		System.out.println("=========Done reading file==========");
+		// System.out.println("=========Done reading file==========");
 		return specDefinitions;
 	}
 
