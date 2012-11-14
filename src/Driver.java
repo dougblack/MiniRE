@@ -2,29 +2,47 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.io.*;
 
+/**
+ * Generates and stores tokens from a program file using token definitions from
+ * a grammar file
+ */
 public class Driver {
 
-    private TableWalker tw;
-    private ArrayList<Token> tokens;
-
     public static void main(String[] args) {
-        Driver d = new Driver("spec2.txt", "input2.txt");
+        Driver d = new Driver("spec.txt", "input2.txt");
         d.generateTokens();
         ArrayList<Token> tokens = d.getTokens();
 
+        System.out.println();
         for (int i = 0; i < tokens.size(); i++) {
-            System.out.println(tokens.get(i).getId() + ": " + tokens.get(i).getString());
+            System.out.println(tokens.get(i).getId() + ": " +
+                tokens.get(i).getString());
         }
     }
 
+    private TableWalker tw; // generates tokens
+    private ArrayList<Token> tokens; // stores tokens
+
+    /**
+     * Accepts a grammar file containing token definitions and a program file
+     * to scan for tokens. Parses the grammar file and constructs DFAs and a
+     * table walker to scan the program file.
+     * 
+     * @param grammarFile A file containing token definitions
+     * @param programFile A file to scan for tokens
+     */
     public Driver(String grammarFile, String programFile) {
         SpecParser sp = new SpecParser();
         HashMap<String, DFA> dfas = sp.parseFile(grammarFile);
-        HashMap<String, String> defs = sp.specDefinitions;
         tokens = new ArrayList<Token>();
-        tw = new TableWalker(programFile, dfas, defs);
+        tw = new TableWalker(programFile, dfas);
     }
 
+    /**
+     * Repeatedly calls the table walker for the next token in the program file.
+     * Stores each token until the end of the file is reached or an unknown
+     * token is encountered.
+     */
     public void generateTokens() {
         boolean error = false;
         Token token;
@@ -47,6 +65,12 @@ public class Driver {
         }
     }
 
+    /**
+     * Returns all scanned tokens up to the end of the file or the first unknown
+     * token, in the order they were scanned
+     *
+     * @return A list of all scanned tokens, in the order they were scanned
+     */
     public ArrayList<Token> getTokens() {
         return tokens;
     }

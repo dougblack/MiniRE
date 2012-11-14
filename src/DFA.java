@@ -6,20 +6,12 @@ import java.util.TreeSet;
 import java.util.Set;
 import java.util.Stack;
 
+/**
+ * Converts an NFA to a DFA and allows stepping through the DFA one input at a
+ * time. Has methods to test if the DFA accepts given strings and to display
+ * the DFA's states and transitions.
+ */
 public class DFA {
-
-    private SetAutomata sMata;
-    private String regex;
-    private State stepState;
-
-	public DFA(NFA nfa) {
-        sMata = new SetAutomata();
-
-		if (nfa != null) {
-            buildFromNFA(nfa);
-            regex = nfa.thisRegex;
-        }
-	}
 
 	public static void main(String args[]) {
 
@@ -41,7 +33,8 @@ public class DFA {
 		NFA nfa4 = new NFA("(dougblack)+");
         DFA dfa4 = new DFA(nfa4);
         //dfa4.printStructure();
-        dfa4.testDFA("", "(dougblack)+", "(dougblack)", "dougblack", "dougblackdougblach", "dougblackdougblack");
+        dfa4.testDFA("", "(dougblack)+", "(dougblack)", "dougblack",
+            "dougblackdougblach", "dougblackdougblack");
 		
 		NFA nfa5 = new NFA("[0-9]*");
         DFA dfa5 = new DFA(nfa5);
@@ -64,7 +57,31 @@ public class DFA {
         dfa8.testDFA("a", "az", "", " ", "z", "b4", "9");
 	}
 
-    // Returns true if this dfa accepts the given string, false otherwise
+    private SetAutomata sMata; // contains the actual states and transitions
+    private String regex; // regular expression corresponding to this DFA
+    private State stepState; // current state the DFA is in when stepping
+
+    /**
+     * Constructs a DFA based on the given NFA
+     *
+     * @param nfa An NFA
+     */
+	public DFA(NFA nfa) {
+        sMata = new SetAutomata();
+
+		if (nfa != null) {
+            buildFromNFA(nfa);
+            regex = nfa.thisRegex;
+        }
+        stepState = sMata.startState;
+	}
+
+    /**
+     * Tests if this DFA accepts the given string
+     *
+     * @param string A string to feed to this DFA
+     * @return true if the string was accepted, false otherwise
+     */
     public boolean testString(String string) {
         State currentState = sMata.startState;
         char c;
@@ -72,7 +89,7 @@ public class DFA {
         for (int i = 0; i < string.length(); i++) {
             c = string.charAt(i);
 
-            if (!currentState.accepts(c)) {
+            if (!currentState.transitionsOn(c)) {
                 return false;
             }
             currentState = currentState.nextState(c);
@@ -82,32 +99,15 @@ public class DFA {
         }
         return result;
     }
-
-    public void step(char c) {
-        if (stepState.accepts(c)) {
-            stepState = stepState.nextState(c);
-        }
-    }
-
-    public boolean currentlyRecognizes(char c) {
-        return stepState.accepts(c);
-    }
-
-    public boolean isAccepting() {
-        return sMata.acceptStates.contains(stepState);
-    }
-
-    public void reset() {
-        stepState = sMata.startState;
-    }
-
-    public State getStepState() {
-        return stepState;
-    }
 	
-    // Tests each given string to see if this dfa acccepts it
+    /**
+     * Tests each given string to see if this DFA acccepts it
+     *
+     * @param strings Any number of strings to feed to this DFA
+     */
 	public void testDFA(String ...strings) {
-		System.out.println("Starting new DFA with regex: \"" + this.regex + "\""); // quotes are necessary to identify the empty string
+		System.out.println("Starting new DFA with regex: \"" + this.regex +
+            "\""); // quotes are necessary to identify the empty string
 		boolean matches = false;
 		String result = "";
 		for (int i = 0; i < strings.length; i++) {
@@ -123,6 +123,10 @@ public class DFA {
 		}
 	}
 	
+    /**
+     * Prints all state transitions, the start state, and the accept state for
+     * this DFA
+     */
     public void printStructure() {
         HashMap<HashSet<Node>, State> states = sMata.states;
         Iterator<HashSet<Node>> nodeSets = states.keySet().iterator();
@@ -135,7 +139,8 @@ public class DFA {
             chars = states.get(nfaNodes).transitions.keySet();
             for (char c : chars) {
                 System.out.println("State " + states.get(nfaNodes).stateId +
-                    " ----(" + c + ")----> State " + states.get(nfaNodes).transitions.get(c).stateId);
+                    " ----(" + c + ")----> State " +
+                    states.get(nfaNodes).transitions.get(c).stateId);
             }
         }
         System.out.println("Start state: " + sMata.startState.stateId);
@@ -147,9 +152,10 @@ public class DFA {
     }
 
 	/**
-	 * This method will apply the NFA -> DFA algorithm specified in the book.
+	 * Applies the NFA -> DFA algorithm specified in the book, using epsilon
+     * closures and the subset construction.
 	 * 
-	 * @param nfa The input NFA.
+	 * @param nfa An NFA
 	 */
 	public void buildFromNFA(NFA nfa) {
         HashSet<Node> currentState, nextState;
@@ -185,12 +191,14 @@ public class DFA {
 
                 // Determine where the nodes in currentState would transition to
                 // in the NFA
-                nextNfaNodes = computeTransitions(currentState, character).iterator();
+                nextNfaNodes =
+                    computeTransitions(currentState, character).iterator();
                 
                 while (nextNfaNodes.hasNext()) {
                     // Get the nodes in the current node's epsilon closure; the
                     // epsilon closure is a state in the DFA
-                    nextDfaNodes = epsilonClosures.get(nextNfaNodes.next()).iterator();
+                    nextDfaNodes =
+                        epsilonClosures.get(nextNfaNodes.next()).iterator();
 
                     while (nextDfaNodes.hasNext()) {
                         node = nextDfaNodes.next();
@@ -215,12 +223,19 @@ public class DFA {
             }
         }
         // Ensure empty string is accepted
-        if (epsilonClosures.get(nfa.getStartNode()).contains(nfa.getAcceptingNode())) {
+        if (epsilonClosures.get(nfa.getStartNode()).contains(
+            nfa.getAcceptingNode())) {
+
             sMata.setAccepting(epsilonClosures.get(nfa.getStartNode()));
         }
 	}
 
-    // Returns a mapping of nodes to the epsilon set they belong to
+    /**
+     * Maps each node from the NFA to its epsilon closure
+     *
+     * @param nfa The NFA this DFA was derived from
+     * @return A map of each node from the NFA to its epsilon closure
+     */
     private HashMap<Node, HashSet<Node>> epsilonClosures(NFA nfa) {
         ArrayList<Node> oneEpsilonClosure;
         HashSet<Node> epsilonClosureSet;
@@ -232,7 +247,8 @@ public class DFA {
         epsilonClosures = new HashMap<Node, HashSet<Node>>();
 
         for (Node srcNode : nfa.getNodes()) {
-            oneEpsilonClosure = nfa.traverseNullPaths(new ArrayList<Node>(), srcNode);
+            oneEpsilonClosure =
+                nfa.traverseNullPaths(new ArrayList<Node>(), srcNode);
 
             // The epsilon closure is an ArrayList right now; it's more useful
             // to me as a set
@@ -246,8 +262,14 @@ public class DFA {
         return epsilonClosures;
     }
 
-    // Computes the set of all nodes the nodes in epsilon set inNodes could
-    // transition to on the given char
+    /**
+     * Computes the set of all nodes the nodes in inNodes could transition to on
+     * the given character
+     *
+     * @param inNodes An epsilon closure from an NFA
+     * @param c A character
+     * @return All nodes the nodes in inNodes could transition to on c
+     */
     private HashSet<Node> computeTransitions(HashSet<Node> inNodes, char c) {
         HashSet<Node> outNodes = new HashSet<Node>();
         Iterator<Node> listOfInNodes = inNodes.iterator();
@@ -263,16 +285,65 @@ public class DFA {
         }
         return outNodes;
     }
+
+    /**
+     * If the DFA's current state can transition on the given character, it
+     * does, and the currentState is updated.
+     *
+     * @param c A character
+     */
+    public void step(char c) {
+        if (stepState.transitionsOn(c)) {
+            stepState = stepState.nextState(c);
+        }
+    }
+
+    /**
+     * Determines if the DFA's current state can transition on the given
+     * character
+     *
+     * @param c A character
+     * @return true if the DFA's current state can transition on c, false
+     *          otherwise
+     */
+    public boolean transitionsOn(char c) {
+        return stepState.transitionsOn(c);
+    }
+
+    /**
+     * Determines if the DFA's current state is an accept state
+     *
+     * @return true if the DFA's current state is an accept state, false
+     *          otherwise
+     */
+    public boolean inAcceptState() {
+        return sMata.acceptStates.contains(stepState);
+    }
+
+    /**
+     * Sets the current state of this DFA as the start state
+     */
+    public void reset() {
+        stepState = sMata.startState;
+    }
 }
 
-// Converts sets of nodes from an NFA into states in a DFA, storing the states
-// in a Hashmap with the set of nodes as the key.
+/**
+ * Converts epsilon closures from an NFA into individual states in a DFA,
+ * identifying the states by the set of nodes in the epsilon closure. Maintains
+ * the single start state for this DFA and a set of all accept states.
+ */
 class SetAutomata {
 
-    State startState;
-    HashSet<State> acceptStates;
-    HashMap<HashSet<Node>, State> states; // identifies the States by the set of NFA Nodes they represent
+    State startState; // start state of the DFA
+    HashSet<State> acceptStates; // all accept states in the DFA
+    HashMap<HashSet<Node>, State> states; // identifies the states by the set of
+                                          // nodes they represent in the NFA
 
+    /**
+     * Creates a new automata with a single transitionless state as its start
+     * state; does not assume the state is accepting
+     */
     public SetAutomata() {
         acceptStates = new HashSet<State>();
         states = new HashMap<HashSet<Node>, State>();
@@ -281,19 +352,30 @@ class SetAutomata {
         states.put(startState.nodes, startState);
     }
 
-    // Creates a new automata with a single State representing the given set of
-    // nodes; does not assume the state is accepting
-    public SetAutomata(HashSet<Node> setOfNodes) {
-        startState = new State(setOfNodes);
+    /**
+     * Creates a new automata with a single state that represents the given set
+     * of nodes from an NFA as its start state; does not assume the state is
+     * accepting, and does not record any transitions
+     *
+     * @param nodeSet An epsilon closure from an NFA
+     */
+    public SetAutomata(HashSet<Node> nodeSet) {
+        startState = new State(nodeSet);
         acceptStates = new HashSet<State>();
         states = new HashMap<HashSet<Node>, State>();
 
-        states.put(setOfNodes, startState);
+        states.put(nodeSet, startState);
     }
 
-    // Creates new states for the given sets of nodes if needed, or finds the
-    // States that represent them, then adds a transition to the State for src
-    // to the State for dst on the given char
+    /**
+     * Creates new states for the given sets of nodes if needed, or finds the
+     * states that represent them; adds to the state representing src a
+     * transition on the given character to the state representing dst
+     *
+     * @param src An epsilon closure from an NFA with a transition on c to dst
+     * @param c A character
+     * @param dst An epsilon closure from an NFA
+     */
     public void addTransition(HashSet<Node> src, char c, HashSet<Node> dst) {
         State currentState = findState(src);
         State nextState = findState(dst);
@@ -305,58 +387,97 @@ class SetAutomata {
         }
     }
 
-    // Returns either the State that represents the given set of nodes or a new
-    // State if the set is new to this automata.
-    public State findState(HashSet<Node> set) {
+    /**
+     * Returns either the state that represents the given set of nodes, or a new
+     * state (if the set is new to this automata)
+     *
+     * @param nodeSet An epsilon closure from an NFA
+     * @return The state representing the given set of nodes
+     */
+    public State findState(HashSet<Node> nodeSet) {
         State state;
 
-        if (states.containsKey(set)) {
-            return states.get(set);
+        if (states.containsKey(nodeSet)) {
+            return states.get(nodeSet);
         }
-        states.put(set, state = new State(set));
+        states.put(nodeSet, state = new State(nodeSet));
         return state;
     }
 
-    // Sets the State that represents the given set of nodes as accepting and
-    // adds it to the list of accept states
+    /**
+     * Sets the state that represents the given set of nodes as accepting and
+     * adds it to the list of accept states
+     *
+     * @param nodeSet An epsilon closure from an NFA
+     */
     public void setAccepting(HashSet<Node> nodeSet) {
         State accepting = findState(nodeSet);
         acceptStates.add(accepting);
     }
 }
 
-// Represents nodes from an NFA; has a unique int id, a unique set of nodes it
-// represents, and a map of input characters to next states
+/**
+ * Represents an epsilon closure from an NFA; stores the set of nodes it
+ * represents and maps transition characters to next states
+ */
 class State {
-    static int _stateId = 0;
-    int stateId = _stateId++;
-    HashMap<Character, State> transitions;
-    HashSet<Node> nodes;
+    static int _stateId = 0; // a way to quickly identify each state uniquely
+    int stateId = _stateId++; // this state's unique number
+    HashMap<Character, State> transitions; // all transitions from this state
+    HashSet<Node> nodes; // epsilon closure from an NFA this state represents
 
-    // Constructs a State to represent the given set of nodes in a DFA
-    public State(HashSet<Node> setOfNodes) {
+    /**
+     * Constructs a State to represent in a DFA the given epsilon closure of NFA
+     * nodes
+     * 
+     * @param nodeSet An epsilon closure from an NFA
+     */
+    public State(HashSet<Node> nodeSet) {
         transitions = new HashMap<Character, State>();
-        nodes = setOfNodes;
+        nodes = nodeSet;
     }
 
-    // Stores a transition from this State to the given state on the given
-    // character
+    /**
+     * Stores a transition from this State to the given state on the given
+     * character
+     *
+     * @param c A character that causes this state to transition to nextState
+     * @param nextState The next state this state transitions to given c
+     */
     public void addTransition(char c, State nextState) {
         transitions.put(c, nextState);
     }
 
-    // Returns whether the given node is represented by this State
+    /**
+     * Determines whether the given node is represented by this state
+     *
+     * @param node A node from an NFA
+     * @return true if the node is in the set of nodes this state represents,
+     *          false otherwise
+     */
     public boolean contains(Node node) {
         return nodes.contains(node);
     }
 
-    // Returns whether the given character is a valid transition from this State
-    public boolean accepts(char c) {
+    /**
+     * Determines whether the given character can cause a transition at this
+     * state
+     *
+     * @param c A character
+     * @return true if this state transitions on c, false otherwise
+     */
+    public boolean transitionsOn(char c) {
         return transitions.containsKey(c);
     }
 
-    // If this State accepts the given character, it returns the next State in
-    // the transition; otherwise it returns null
+    /**
+     * If this state transitions on the given character, it returns the next
+     * state in the transition; otherwise it returns null
+     *
+     * @param c A character
+     * @return either the next state after transitioning on c, or null if the
+     *          state doesn't transition on c
+     */
     public State nextState(char c) {
         if (transitions.containsKey(c)) {
             return transitions.get(c);
@@ -364,5 +485,3 @@ class State {
         return null;
     }
 }
-
-

@@ -1,62 +1,69 @@
 import java.io.*;
 import java.util.HashMap;
 
+/**
+ * Scans a given program file to construct tokens using the given DFAs
+ */
 public class TableWalker {
 
-    private static final int SPACE = 32; // ASCII code for space; lowest code for a printable char
-    private static final int DELETE = 127; // ASCII code for delete; first non-printable char after the printable chars
-    private static final char EOF = (char)-1; // signals end of programFile
-    private GetChar gc;
-	private HashMap<String, DFA> dfas;
-    private HashMap<String, String> defs;
-    private HashMap<DFA, String> viableDFAs;
-    private boolean locked, noToken, finishedStepping;
-    private String buffer, tokenId, tokenString, lastAcceptedString;
+    private static final int SPACE = 32; // lowest printable ASCII character
+    private static final int DELETE = 127; // first non-printable ASCII
+                                             // character after all printables
+    private static final char EOF = (char) -1; // signals end of programFile
+    private GetChar gc; // gets the next character from the program file
+	private HashMap<String, DFA> dfas; // DFAs from each token definition
+    private HashMap<DFA, String> viableDFAs; // DFAs that may accept the string
+                                              // currently being processed
+    private boolean noToken; // signal to return either an error or EOF 
+    private boolean finishedStepping; // true only when a longest match token
+                                        // string has been generated
+    private String buffer; // stores previously-read, untokenized characters
+    private String tokenId; // identifier for the token being generated
+
+    /* tokenString is the longest string currently being accepted by a DFA, a
+       potential string for the current token. If tokenString ends up not being
+       accepted by the last DFA, the table walker attempts to return a token
+       with lastAcceptedString as its string; lastAcceptedString is tokenString
+       as it was the last time a DFA accepted it */
+    private String tokenString;
+    private String lastAcceptedString;
 
 	/**
-	 * Create a TableWalker to generate tokens from programFile according to the
-     * given dfas.
-	 * @param programFile
-	 * @param dfa
+	 * Constructs a table walker to generate tokens from a given program file
+     * using the given DFAs
+     *
+	 * @param programFile A file to scan for tokens
+	 * @param dfas All DFAs mapped to their corresponding token identifiers
 	 */
-	public TableWalker(String programFile, HashMap<String, DFA> dfas,
-        HashMap<String, String> defs) {
-        locked = false;
-
+	public TableWalker(String programFile, HashMap<String, DFA> dfas) {
         try {
 		    gc = new GetChar(programFile);
         } catch (FileNotFoundException e) {
             // Signal an error somehow
             System.out.println("File not found");
-            locked = true;
         } catch (IOException e) {
             // Signal an error somehow
             System.out.println("IOException");
-            locked = true;
         }
         this.dfas = dfas;
-        this.defs = defs;
         buffer = "";
 	}
 
-    // Get next char from either buffer or input
-    // Check if it's EOF
-    // Check if it's non-printable
-    //
-    // step through each DFA until one match is left
-    // buffer the extra chars (don't buffer EOF)
-    // return a token
+    
+    /**
+     * Scans the program file for the next longest-match token
+     * 
+     * @return A longest-match token from the program file if found, EOF if the
+     *          end of the file was reached, or an error if an unknown token
+     *          was encountered or some error occurred
+     */
     public Token nextToken() throws IOException {
-        if (locked) {
-            System.out.println("Error creating TableWalker. Scanner locked.");
-            return new Token("%% ERROR", "");
-        }
         noToken = true;
         finishedStepping = false;
-        lastAcceptedString = "";
-        tokenString = "";
+        lastAcceptedString = tokenString = "";
         tokenId = "%% ERROR";
         char c;
+        // Get next char from either buffer or input
         if (buffer.length() > 0) {
             c = buffer.charAt(0);
             buffer = buffer.substring(1);
@@ -67,7 +74,8 @@ public class TableWalker {
         if (c == EOF) {
             return new Token("%% EOF", "");
         }
-            
+
+        // step through each viable DFA until a longest match is left
         viableDFAs = new HashMap<DFA, String>();
         for (String s : dfas.keySet()) {
             viableDFAs.put(dfas.get(s), s);
@@ -90,19 +98,28 @@ public class TableWalker {
                 return new Token("%% ERROR", tokenString);
             }
         } else {
-            //System.out.println("returning token " + tokenId + ": " + lastAcceptedString);
+            //System.out.println("returning token " + tokenId + ": " +
+            //    lastAcceptedString);
+            // buffer any chars that were read but not returned
             buffer(lastAcceptedString, tokenString);
             return new Token(tokenId, lastAcceptedString);
         }
     }
 
+    /**
+     * If any viable DFA's current state can transition on the given character,
+     * it does. Otherwise the DFA is removed from the list of viable DFAs that
+     * could possibly generate a token for the current string.
+     *
+     * @param c A character
+     */
     private void step(char c) {
         for (DFA d : viableDFAs.keySet().toArray(new DFA[0])) {
             //System.out.print("\n" + viableDFAs.get(d));
-            if (d.currentlyRecognizes(c)) {
+            if (d.transitionsOn(c)) {
                 //System.out.print(" recognizes " + c);
                 d.step(c);
-                if (d.isAccepting()) {
+                if (d.inAcceptState()) {
                     //System.out.print(" accepts " + c);
                     noToken = false;
                     tokenId = viableDFAs.get(d);
@@ -115,12 +132,20 @@ public class TableWalker {
         }
         //System.out.println("\nStepped once");
         if (viableDFAs.size() < 1) {
-            //System.out.println("Done Stepping");
+            //System.out.println("Finished Stepping");
             finishedStepping = true;
             
         }
     }
 
+    /**
+     * If the buffer is not empty, debuffers and returns the first buffered
+     * character. Otherwise returns the next character in the program file
+     * (printable or not)
+     * 
+     * @return The next available character to consider as part of the token
+     *          string
+     */
     private char nextChar() {
         char c;
         if (buffer.length() > 0) {
@@ -132,6 +157,13 @@ public class TableWalker {
         return c;
     }
 
+    /**
+     * Buffers the characters that were considered but not used in a token
+     * string.
+     * 
+     * @param str The characters used in the current token being returned
+     * @param diff All characters considered for the current token string.
+     */
     private void buffer(String str, String diff) {
         if (diff.contains(str)) {
             diff = diff.substring(str.length());
@@ -139,11 +171,10 @@ public class TableWalker {
         }
     }
 
-    /*
+    /**
      * Scans the file until either an ASCII-printable character or EOF is found.
      * 
-     * @return The ASCII-printable character found, or -1 if EOF was reached
-     * @throws IOException
+     * @return The character found, or (char) -1 if EOF was reached
      */
     private char advanceToToken() {
         char currentChar;
