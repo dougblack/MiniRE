@@ -13,7 +13,7 @@ public class GetChar {
 		        Charset.forName("UTF-8")));
    }
 
-   public char getNextChar() throws IOException {
+   public char getNextChar() {
       char ch=(char)-1;//' '; // = ' ' to keep compiler happy
       try {
          ch = (char)reader.read();  

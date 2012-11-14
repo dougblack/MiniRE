@@ -10,6 +10,7 @@ public class DFA {
 
     private SetAutomata sMata;
     private String regex;
+    private State stepState;
 
 	public DFA(NFA nfa) {
         sMata = new SetAutomata();
@@ -63,6 +64,7 @@ public class DFA {
         dfa8.testDFA("a", "az", "", " ", "z", "b4", "9");
 	}
 
+    // Returns true if this dfa accepts the given string, false otherwise
     public boolean testString(String string) {
         State currentState = sMata.startState;
         char c;
@@ -80,7 +82,30 @@ public class DFA {
         }
         return result;
     }
+
+    public void step(char c) {
+        if (stepState.accepts(c)) {
+            stepState = stepState.nextState(c);
+        }
+    }
+
+    public boolean currentlyRecognizes(char c) {
+        return stepState.accepts(c);
+    }
+
+    public boolean isAccepting() {
+        return sMata.acceptStates.contains(stepState);
+    }
+
+    public void reset() {
+        stepState = sMata.startState;
+    }
+
+    public State getStepState() {
+        return stepState;
+    }
 	
+    // Tests each given string to see if this dfa acccepts it
 	public void testDFA(String ...strings) {
 		System.out.println("Starting new DFA with regex: \"" + this.regex + "\""); // quotes are necessary to identify the empty string
 		boolean matches = false;
@@ -123,11 +148,6 @@ public class DFA {
 
 	/**
 	 * This method will apply the NFA -> DFA algorithm specified in the book.
-	 * An Automata (which is a pretty terrible name, I admit) is just an NFA.
-	 * It contains a start Node and an end Node. Nodes are connected by Paths.
-	 * There are a few types of Paths (RangePath, AnythingPath, ConversePath,
-	 * CharacterPath). I'm assuming the logic for converting each of these will
-	 * have to be specifically laid out.
 	 * 
 	 * @param nfa The input NFA.
 	 */
@@ -256,6 +276,9 @@ class SetAutomata {
     public SetAutomata() {
         acceptStates = new HashSet<State>();
         states = new HashMap<HashSet<Node>, State>();
+        startState = new State(new HashSet<Node>());
+
+        states.put(startState.nodes, startState);
     }
 
     // Creates a new automata with a single State representing the given set of

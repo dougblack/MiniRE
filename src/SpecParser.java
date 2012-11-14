@@ -6,108 +6,108 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.ArrayList;
 
 public class SpecParser {
 
 	HashMap<String, String> specDefinitions;
-	HashMap<String, NFA> specNFAs;
+	HashMap<String, DFA> specDFAs;
+    ArrayList<String> orderedDefs;
 
 	public static void main(String args[]) {
 		SpecParser sp = new SpecParser();
-		sp.parseFile("src/spec2.txt");
+		sp.parseFile("spec.txt");
 		for (Map.Entry<String, String> specEntry : sp.specDefinitions.entrySet()) {
 			System.out.println("Entry: " + specEntry.getKey() + ". Value: " + specEntry.getValue());
 		}
+        /*for (String id : sp.specDFAs.keySet()) {
+			System.out.println("Id: " + id);
+            sp.specDFAs.get(id).printStructure();
+		}*/
 	}
 
 	public SpecParser() {
 		specDefinitions = new HashMap<String, String>();
-		specNFAs = new HashMap<String, NFA>();
+		specDFAs = new HashMap<String, DFA>();
+        orderedDefs = new ArrayList<String>();
 	}
 
 	/**
 	 * This method runs through the HashMap and reduces each definition to just
-	 * straight regex and then builds NFA's out of that regex. It requires
+	 * straight regex and then builds DFAs from NFAs from that regex. It requires
 	 * substituting in the regex from other token definitions and calculating
 	 * inclusion principles. (i.e. [^A-Z] IN $ALPHA).
 	 * 
 	 * @param filename
 	 * @return
 	 */
-	public HashMap<String, NFA> parseFile(String filename) {
+	public HashMap<String, DFA> parseFile(String filename) {
+        HashMap<String, String> replacements = new HashMap<String, String>();
 		specDefinitions = readFile(filename);
-		for (Map.Entry<String, String> specEntry : specDefinitions.entrySet()) {
-			String entry = specEntry.getKey();
-			String definition = specEntry.getValue().trim();
+		for (int i = 0; i < orderedDefs.size(); i++) {
+            String id = orderedDefs.get(i);
+			String definition = specDefinitions.get(id);
 			if (definition.equals("-")) {
 				definition = "\\-";
-				specDefinitions.put(entry, definition);
+				specDefinitions.put(id, definition);
 			}
 			if (!definition.contains("$")) {
-				specNFAs.put(entry, new NFA(definition));
-			}
+				specDFAs.put(id, new DFA(new NFA(definition)));
+                replacements.put(id, definition);
+			} else {
+                for (String defined : replacements.keySet()) {
+                    definition = definition.replace(defined, replacements.get(defined));
+                }
+                String entry = id;
+			    String target = "";
+			    String excludeRule = "";
+			    if (definition.contains(" IN ")) {
+				    String[] splitDefinition = definition.split(" IN ", 2);
+				    excludeRule = splitDefinition[0].trim();
+				    target = splitDefinition[1].trim();
+
+				    String tokenDefinition = target;
+				    if (tokenDefinition.contains("-") && !(tokenDefinition == ("\\-"))) {
+					    int startIndex = 0;
+					    int dashIndex = tokenDefinition.indexOf("-", startIndex);
+					    while (dashIndex != -1) {
+						    char rangeStart = tokenDefinition.charAt(dashIndex - 1);
+						    char rangeEnd = tokenDefinition.charAt(dashIndex + 1);
+
+						    if (excludeRule.contains("-")) {
+							    int excludeDashIndex = excludeRule.indexOf("-");
+							    char excludeStart = excludeRule.charAt(excludeDashIndex - 1);
+							    char excludeEnd = excludeRule.charAt(excludeDashIndex + 1);
+							    if (rangeIsInRange(excludeStart, excludeEnd, rangeStart, rangeEnd)) {
+								    String replaceString = excludeRange(excludeStart, excludeEnd, rangeStart, rangeEnd);
+								    definition = tokenDefinition.replace(rangeStart + "-" + rangeEnd,
+										    replaceString);
+								    specDefinitions.put(entry, definition);
+								    specDFAs.put(entry, new DFA(new NFA(definition)));
+
+							    }
+						    } else {
+							    char excludeChar = excludeRule.charAt(excludeRule.indexOf("^") + 1);
+							    if (charIsInRange(excludeChar, rangeStart, rangeEnd)) {
+								    String replaceString = excludeChar(excludeChar, rangeStart, rangeEnd);
+								    definition = tokenDefinition.replace(rangeStart + "-" + rangeEnd,
+										    replaceString);
+								    specDefinitions.put(entry, definition);
+								    specDFAs.put(entry, new DFA(new NFA(definition)));
+							    }
+						    }
+
+						    dashIndex = tokenDefinition.indexOf("-", dashIndex + 1);
+					    }
+				    }
+			    }
+                //System.out.println(id + "  " + definition);
+                replacements.put(id, definition);
+			    specDFAs.put(id, new DFA(new NFA(definition)));
+				specDefinitions.put(id, definition);
+            }
 		}
-
-		for (Map.Entry<String, String> specEntry : specDefinitions.entrySet()) {
-			String entry = specEntry.getKey();
-			String definition = specEntry.getValue();
-			String target = "";
-			String excludeRule = "";
-			if (definition.contains(" IN ")) {
-				String[] splitDefinition = definition.split(" IN ", 2);
-				excludeRule = splitDefinition[0].trim();
-				target = splitDefinition[1].trim();
-
-				// sanity check
-				assert (specNFAs.containsKey(target));
-				String tokenDefinition = String.valueOf(specDefinitions.get(target));
-				if (tokenDefinition.contains("-") && !(tokenDefinition == ("\\-"))) {
-					int startIndex = 0;
-					int dashIndex = tokenDefinition.indexOf("-", startIndex);
-					while (dashIndex != -1) {
-						char rangeStart = tokenDefinition.charAt(dashIndex - 1);
-						char rangeEnd = tokenDefinition.charAt(dashIndex + 1);
-
-						if (excludeRule.contains("-")) {
-							int excludeDashIndex = excludeRule.indexOf("-");
-							char excludeStart = excludeRule.charAt(excludeDashIndex - 1);
-							char excludeEnd = excludeRule.charAt(excludeDashIndex + 1);
-							if (rangeIsInRange(excludeStart, excludeEnd, rangeStart, rangeEnd)) {
-								String replaceString = excludeRange(excludeStart, excludeEnd, rangeStart, rangeEnd);
-								String newDefinition = tokenDefinition.replace(rangeStart + "-" + rangeEnd,
-										replaceString);
-								specDefinitions.put(entry, newDefinition);
-								specNFAs.put(entry, new NFA(newDefinition));
-
-							}
-						} else {
-							char excludeChar = excludeRule.charAt(excludeRule.indexOf("^") + 1);
-							if (charIsInRange(excludeChar, rangeStart, rangeEnd)) {
-								String replaceString = excludeChar(excludeChar, rangeStart, rangeEnd);
-								String newDefinition = tokenDefinition.replace(rangeStart + "-" + rangeEnd,
-										replaceString);
-								specDefinitions.put(entry, newDefinition);
-								specNFAs.put(entry, new NFA(newDefinition));
-							}
-						}
-
-						dashIndex = tokenDefinition.indexOf("-", dashIndex + 1);
-					}
-				}
-			}
-		}
-		for (Map.Entry<String, String> specEntry : specDefinitions.entrySet()) {
-			String entry = specEntry.getKey();
-			String definition = specEntry.getValue();
-			if (!definition.contains(" IN ")) {
-				for (Map.Entry<String, String> specEntryTarget : specDefinitions.entrySet()) {
-					definition = definition.replace(specEntryTarget.getKey(), specEntryTarget.getValue());
-					specDefinitions.put(entry, definition);
-				}
-			}
-		}
-
-		return specNFAs;
+		return specDFAs;
 	}
 
 	/*
@@ -126,6 +126,7 @@ public class SpecParser {
 				String[] splitString = strLine.split(" ", 2);
 				if (splitString.length > 1 && !splitString[0].contains("%%")) {
 					specDefinitions.put(splitString[0], splitString[1]);
+                    orderedDefs.add(splitString[0]);
 				}
 			}
 

@@ -1,84 +1,155 @@
-import java.io.BufferedReader;
-import java.io.DataInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
+import java.io.*;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-
-
 
 public class TableWalker {
 
-	String grammarFile;
-	String programFile;
-	DFA grammarDFA;
-	HashMap<String, NFA> specNFAs;
+    private static final int SPACE = 32; // ASCII code for space; lowest code for a printable char
+    private static final int DELETE = 127; // ASCII code for delete; first non-printable char after the printable chars
+    private static final char EOF = (char)-1; // signals end of programFile
+    private GetChar gc;
+	private HashMap<String, DFA> dfas;
+    private HashMap<String, String> defs;
+    private HashMap<DFA, String> viableDFAs;
+    private boolean locked, noToken, finishedStepping;
+    private String buffer, tokenId, tokenString, lastAcceptedString;
 
 	/**
-	 * This "table-walker" program might need to break out into multiple 
-	 * separate file, but for now we can visualize it's functionality as below.
-	 * @param inFile
-	 * @param grammarDFA
+	 * Create a TableWalker to generate tokens from programFile according to the
+     * given dfas.
+	 * @param programFile
+	 * @param dfa
 	 */
-	public TableWalker(String grammarFile, String programFile) {
-		SpecParser sp = new SpecParser();
-		this.grammarFile = programFile;
-		specNFAs = sp.parseFile(grammarFile);
-	}
-	
-	public static void main (String args[]) {
-		
-		TableWalker tw = new TableWalker("src/spec.txt", "src/program.txt");
-		
-		/* The set of test strings */
-		String[] testStrings = {"a", "1", "1.1", "abac", "+", "-", "*", "=", "PRINT"};
-		
-		
-		// Loop over test strings
-		for (String test : testStrings) {
-			
-			/* Clear the state of the NFAs. This resets the "accepted" and "accepting"
-			 * values, as well as the current state of the machine. */
-			for (Map.Entry<String, NFA> specNFA : tw.specNFAs.entrySet()) {
-				specNFA.getValue().reset();
-			}
-		
-			/* Keep track of which NFAs have been accepted for each test string. */
-			@SuppressWarnings("unchecked")
-			HashMap<String, NFA> acceptingNFAs = (HashMap<String, NFA>) tw.specNFAs.clone(); 
-			for (int i = 0; i < test.length(); i++) {
-				char c = test.charAt(i);
-				
-				/* We have to use an iterator or we'll run into ConcurrentModificationException */
-				Iterator<Map.Entry<String, NFA>> entries = acceptingNFAs.entrySet().iterator();
-				while (entries.hasNext()) {
-					Map.Entry<String, NFA> specNFA = entries.next();
-					
-					String entry = specNFA.getKey();
-					NFA nfa = specNFA.getValue();
-					
-					/* Give this NFA this character */
-					nfa.step(c);
-				
-					/* If it's not accepting, kick it out of our acceptingNFAs set */
-					if (!nfa.accepting) {
-						entries.remove();
-					}
-				}
-				
-				/* This is bad logic. It pretends that the last remaining NFA has accepted this string. */
-				if (acceptingNFAs.size() == 1) {
-					for (Map.Entry<String, NFA> entry : acceptingNFAs.entrySet()) {
-						System.out.println(test + " was last accepted by: " + entry.getKey());
-					}
-					break;
-				}
-			}
-		}
-		
+	public TableWalker(String programFile, HashMap<String, DFA> dfas,
+        HashMap<String, String> defs) {
+        locked = false;
+
+        try {
+		    gc = new GetChar(programFile);
+        } catch (FileNotFoundException e) {
+            // Signal an error somehow
+            System.out.println("File not found");
+            locked = true;
+        } catch (IOException e) {
+            // Signal an error somehow
+            System.out.println("IOException");
+            locked = true;
+        }
+        this.dfas = dfas;
+        this.defs = defs;
+        buffer = "";
 	}
 
+    // Get next char from either buffer or input
+    // Check if it's EOF
+    // Check if it's non-printable
+    //
+    // step through each DFA until one match is left
+    // buffer the extra chars (don't buffer EOF)
+    // return a token
+    public Token nextToken() throws IOException {
+        if (locked) {
+            System.out.println("Error creating TableWalker. Scanner locked.");
+            return new Token("%% ERROR", "");
+        }
+        noToken = true;
+        finishedStepping = false;
+        lastAcceptedString = "";
+        tokenString = "";
+        tokenId = "%% ERROR";
+        char c;
+        if (buffer.length() > 0) {
+            c = buffer.charAt(0);
+            buffer = buffer.substring(1);
+        } else {
+            c = advanceToToken();
+        }
+
+        if (c == EOF) {
+            return new Token("%% EOF", "");
+        }
+            
+        viableDFAs = new HashMap<DFA, String>();
+        for (String s : dfas.keySet()) {
+            viableDFAs.put(dfas.get(s), s);
+            dfas.get(s).reset();
+        }
+        do {
+            //System.out.println(c);
+            step(c);
+            tokenString = tokenString + c;
+            if (finishedStepping) {
+                //System.out.println("breaking while loop");
+                break;
+            }
+        } while (((c = nextChar()) > SPACE) && (c < DELETE));
+        if (noToken) {
+            //System.out.println("no Token");
+            if (c == EOF) {
+                return new Token("%% EOF", "");
+            } else {
+                return new Token("%% ERROR", tokenString);
+            }
+        } else {
+            //System.out.println("returning token " + tokenId + ": " + lastAcceptedString);
+            buffer(lastAcceptedString, tokenString);
+            return new Token(tokenId, lastAcceptedString);
+        }
+    }
+
+    private void step(char c) {
+        for (DFA d : viableDFAs.keySet().toArray(new DFA[0])) {
+            //System.out.print("\n" + viableDFAs.get(d));
+            if (d.currentlyRecognizes(c)) {
+                //System.out.print(" recognizes " + c);
+                d.step(c);
+                if (d.isAccepting()) {
+                    //System.out.print(" accepts " + c);
+                    noToken = false;
+                    tokenId = viableDFAs.get(d);
+                    lastAcceptedString = tokenString + c;
+                }
+            } else {
+                //System.out.print(" doesn't recognize " + c);
+                viableDFAs.remove(d);
+            }
+        }
+        //System.out.println("\nStepped once");
+        if (viableDFAs.size() < 1) {
+            //System.out.println("Done Stepping");
+            finishedStepping = true;
+            
+        }
+    }
+
+    private char nextChar() {
+        char c;
+        if (buffer.length() > 0) {
+            c = buffer.charAt(0);
+            buffer = buffer.substring(1);
+        } else {
+            c = gc.getNextChar();
+        }
+        return c;
+    }
+
+    private void buffer(String str, String diff) {
+        if (diff.contains(str)) {
+            diff = diff.substring(str.length());
+            buffer = diff + buffer;
+        }
+    }
+
+    /*
+     * Scans the file until either an ASCII-printable character or EOF is found.
+     * 
+     * @return The ASCII-printable character found, or -1 if EOF was reached
+     * @throws IOException
+     */
+    private char advanceToToken() {
+        char currentChar;
+        
+        while (((currentChar = gc.getNextChar()) != EOF)
+                && ((currentChar <= SPACE) || (currentChar >= DELETE)));
+        return currentChar;
+    }
 }
