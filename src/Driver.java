@@ -20,13 +20,6 @@ public class Driver {
 
         Driver d = new Driver(grammarFile, programFile);
         d.generateTokens();
-        ArrayList<Token> tokens = d.getTokens();
-
-        System.out.println();
-        for (int i = 0; i < tokens.size(); i++) {
-            System.out.println(tokens.get(i).getId() + ": " +
-                tokens.get(i).getString());
-        }
     }
 
     private TableWalker tw; // generates tokens
@@ -55,22 +48,25 @@ public class Driver {
     public void generateTokens() {
         boolean error = false;
         Token token;
+        System.out.println("\nPROCESSING TOKENS.");
         try {
             while ((token = tw.nextToken()).getId() != "%% EOF") {
                 if (token.getId() == "%% ERROR") {
-                    error = true;
-                    System.out.println("Unknown token " + token.getString());
-                    break;
+                    System.out.println("Unknown token: " + token.getString());
+                    continue;
+                } else {
+                    System.out.println(token.getId() + ": " +
+                        token.getString());
                 }
                 tokens.add(token);
             }
             
         } catch (IOException e) {
-            System.out.println("Error: IOException while processing tokens");
+            System.out.println("ERROR: IOEXCEPTION WHILE PROCESSING TOKENS.");
             error = true;
         }
         if (!error) {
-            System.out.println("Finished processing tokens");
+            System.out.println("FINISHED PROCESSING TOKENS.");
         }
     }
 

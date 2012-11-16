@@ -1,5 +1,6 @@
-# CS 3240-A
-# Project 1 - Phase 1
+# Doug Black, Alazar Tamrat, Al Leister, Chris Chang
+# CS 3240 A
+# Project 1 – Phase 1
 #
 # Compiles the java files included in this project
 #
