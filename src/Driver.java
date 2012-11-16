@@ -9,7 +9,16 @@ import java.io.*;
 public class Driver {
 
     public static void main(String[] args) {
-        Driver d = new Driver("spec.txt", "input2.txt");
+        String grammarFile, programFile;
+
+        if (args.length != 2) {
+            System.out.println("Invalid args");
+            return;
+        }
+        grammarFile = args[0];
+        programFile = args[1];
+
+        Driver d = new Driver(grammarFile, programFile);
         d.generateTokens();
         ArrayList<Token> tokens = d.getTokens();
 
