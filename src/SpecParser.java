@@ -16,10 +16,20 @@ public class SpecParser {
 
 	public static void main(String args[]) {
 		SpecParser sp = new SpecParser();
-		sp.parseFile("spec.txt");
+        String grammarFile;
+
+        if (args.length != 1) {
+            System.out.println("Invalid args");
+            return;
+        }
+        grammarFile = args[0];
+		sp.parseFile(grammarFile);
+
+        System.out.println("\nPRINTING TOKEN DEFINITIONS.");
 		for (Map.Entry<String, String> specEntry : sp.specDefinitions.entrySet()) {
 			System.out.println("Entry: " + specEntry.getKey() + ". Value: " + specEntry.getValue());
 		}
+        System.out.println("FINISHED PRINTING TOKEN DEFINITIONS.");
         /*for (String id : sp.specDFAs.keySet()) {
 			System.out.println("Id: " + id);
             sp.specDFAs.get(id).printStructure();

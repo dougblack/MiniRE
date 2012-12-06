@@ -9,15 +9,17 @@ import java.io.*;
 public class Driver {
 
     public static void main(String[] args) {
-        Driver d = new Driver("spec.txt", "input2.txt");
-        d.generateTokens();
-        ArrayList<Token> tokens = d.getTokens();
+        String grammarFile, programFile;
 
-        System.out.println();
-        for (int i = 0; i < tokens.size(); i++) {
-            System.out.println(tokens.get(i).getId() + ": " +
-                tokens.get(i).getString());
+        if (args.length != 2) {
+            System.out.println("Invalid args");
+            return;
         }
+        grammarFile = args[0];
+        programFile = args[1];
+
+        Driver d = new Driver(grammarFile, programFile);
+        d.generateTokens();
     }
 
     private TableWalker tw; // generates tokens
@@ -46,22 +48,25 @@ public class Driver {
     public void generateTokens() {
         boolean error = false;
         Token token;
+        System.out.println("\nPROCESSING TOKENS.");
         try {
             while ((token = tw.nextToken()).getId() != "%% EOF") {
                 if (token.getId() == "%% ERROR") {
-                    error = true;
-                    System.out.println("Unknown token " + token.getString());
-                    break;
+                    System.out.println("Unknown token: " + token.getString());
+                    continue;
+                } else {
+                    System.out.println(token.getId() + ": " +
+                        token.getString());
                 }
                 tokens.add(token);
             }
             
         } catch (IOException e) {
-            System.out.println("Error: IOException while processing tokens");
+            System.out.println("ERROR: IOEXCEPTION WHILE PROCESSING TOKENS.");
             error = true;
         }
         if (!error) {
-            System.out.println("Finished processing tokens");
+            System.out.println("FINISHED PROCESSING TOKENS.");
         }
     }
 
