@@ -1,3 +1,4 @@
+package tokenizer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -161,7 +162,7 @@ public class DFA {
         HashSet<Node> currentState, nextState;
         HashMap<Node, HashSet<Node>> epsilonClosures;
         Stack<HashSet<Node>> stack;
-        HashSet<HashSet<Node>> visitedStates, possibleAcceptStates;
+        HashSet<HashSet<Node>> visitedStates;
         TreeSet<Character> alphabet;
         Iterator<Node> nextNfaNodes, nextDfaNodes;
         Node node;
@@ -174,7 +175,6 @@ public class DFA {
         currentState = epsilonClosures.get(nfa.getStartNode());
         stack = new Stack<HashSet<Node>>();
         visitedStates = new HashSet<HashSet<Node>>();
-        possibleAcceptStates = new HashSet<HashSet<Node>>();
 
         stack.push(currentState);
         visitedStates.add(currentState);
