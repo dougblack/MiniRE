@@ -23,6 +23,7 @@ public class SyntaxTreeNode {
     }
 
     public SyntaxTreeNode(String nodeType) {
+        children = new ArrayList<SyntaxTreeNode>();
         this.nodeType = nodeType;
     }
 

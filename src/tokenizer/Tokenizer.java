@@ -51,11 +51,12 @@ public class Tokenizer {
         Token token;
         try {
             while ((token = tw.nextToken()).getId() != "%% EOF") {
-                if (token.getId() == "%% ERROR") {
+                if (token.getId().equals("%% ERROR")) {
                     error = true;
                     System.out.println("Unknown token " + token.getString());
                     break;
                 }
+                System.out.println("TOKEN: " + token.getId());
                 tokens.add(token);
             }
             

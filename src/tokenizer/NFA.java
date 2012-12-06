@@ -43,6 +43,7 @@ public class NFA {
 	}
 
 	public NFA(String regex) {
+        System.out.println("Working on: " + regex);
 		nodes = new HashSet<Node>();
 		thisRegex = regex;
 		thisNFA = regexToAutomata(regex);
@@ -193,7 +194,26 @@ public class NFA {
 				nodes.remove(last.outNode);
 				nodes.add(last.outNode);
 
-			} else if (currentChar == '.') { // Wildcard character. Add
+			} else if (i + 1 < end && regex.charAt(i + 1) == '-') {
+                // System.out.println("Dash is next. Adding RangePath for " +
+                // currentChar + "-" + regex.charAt(i+2));
+                Automata next = new Automata();
+                next.setInteriorPath(new RangePath(currentChar, regex.charAt(i + 2)));
+                Automata last = automataStack.peek();
+                last.connectToAutomata(next);
+                automataStack.push(next);
+                i = i + 2;
+
+                // store all nodes, removing any older versions that may exist
+                nodes.remove(next.inNode);
+                nodes.add(next.inNode);
+                nodes.remove(next.outNode);
+                nodes.add(next.outNode);
+                nodes.remove(last.inNode);
+                nodes.add(last.inNode);
+                nodes.remove(last.outNode);
+                nodes.add(last.outNode);
+            } else if (currentChar == '.' && i+1 < end) { // Wildcard character. Add
 												// AnythingPath.
 			// System.out.println("Wildcard. Adding anything path.");
 				Automata next = new Automata();
@@ -273,8 +293,6 @@ public class NFA {
 			 */
 			else if (currentChar == '(') {
 				int closingIndex = indexOfClosing(regex, i + 1, end, '(');
-				// System.out.println("Parenthesis. Building automata for " +
-				// regex.substring(i, closingIndex + 1));
 				Automata insideAutomata = regexToAutomataHelper(regex, i + 1, closingIndex);
 				Automata last = automataStack.peek();
 				last.connectToAutomata(insideAutomata);
@@ -292,8 +310,6 @@ public class NFA {
 				nodes.add(last.outNode);
 			} else if (currentChar == '[') { // Character class begins.
 				int closingIndex = indexOfClosing(regex, i + 1, end, '[');
-				// System.out.println("Bracket. Building automata for " +
-				// regex.substring(i, closingIndex + 1));
 				Automata rangeAutomata = regexToAutomataHelper(regex, i + 1, closingIndex);
 				Automata last = automataStack.peek();
 				last.connectToAutomata(rangeAutomata);
@@ -356,26 +372,7 @@ public class NFA {
 				nodes.remove(last.outNode);
 				nodes.add(last.outNode);
 
-			} else if (i + 1 < end && regex.charAt(i + 1) == '-') {
-				// System.out.println("Dash is next. Adding RangePath for " +
-				// currentChar + "-" + regex.charAt(i+2));
-				Automata next = new Automata();
-				next.setInteriorPath(new RangePath(currentChar, regex.charAt(i + 2)));
-				Automata last = automataStack.peek();
-				last.connectToAutomata(next);
-				automataStack.push(next);
-				i = i + 2;
-
-				// store all nodes, removing any older versions that may exist
-				nodes.remove(next.inNode);
-				nodes.add(next.inNode);
-				nodes.remove(next.outNode);
-				nodes.add(next.outNode);
-				nodes.remove(last.inNode);
-				nodes.add(last.inNode);
-				nodes.remove(last.outNode);
-				nodes.add(last.outNode);
-			} else { // Just a random character. Accept it.
+			}else { // Just a random character. Accept it.
 			// System.out.println("Random character. Adding CharacterPath for: "
 			// + currentChar);
 				Automata next = new Automata();

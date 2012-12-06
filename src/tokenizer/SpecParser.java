@@ -50,9 +50,11 @@ public class SpecParser {
 			String definition = specDefinitions.get(id);
 			if (definition.equals("-")) {
 				definition = "\\-";
+                System.out.println("SPEC: " + id);
 				specDefinitions.put(id, definition);
 			}
 			if (!definition.contains("$")) {
+                System.out.println("SPEC: " + id);
 				specDFAs.put(id, new DFA(new NFA(definition)));
                 replacements.put(id, definition);
 			} else {
@@ -68,7 +70,7 @@ public class SpecParser {
 				    target = splitDefinition[1].trim();
 
 				    String tokenDefinition = target;
-				    if (tokenDefinition.contains("-") && !(tokenDefinition == ("\\-"))) {
+				    if (tokenDefinition.contains("-") && !(tokenDefinition.equals("\\-"))) {
 					    int startIndex = 0;
 					    int dashIndex = tokenDefinition.indexOf("-", startIndex);
 					    while (dashIndex != -1) {
@@ -84,6 +86,7 @@ public class SpecParser {
 								    definition = tokenDefinition.replace(rangeStart + "-" + rangeEnd,
 										    replaceString);
 								    specDefinitions.put(entry, definition);
+                                    System.out.println("SPEC: " + id);
 								    specDFAs.put(entry, new DFA(new NFA(definition)));
 
 							    }
@@ -94,6 +97,7 @@ public class SpecParser {
 								    definition = tokenDefinition.replace(rangeStart + "-" + rangeEnd,
 										    replaceString);
 								    specDefinitions.put(entry, definition);
+                                    System.out.println("SPEC: " + id);
 								    specDFAs.put(entry, new DFA(new NFA(definition)));
 							    }
 						    }
@@ -104,6 +108,7 @@ public class SpecParser {
 			    }
                 //System.out.println(id + "  " + definition);
                 replacements.put(id, definition);
+                System.out.println("SPEC: " + id);
 			    specDFAs.put(id, new DFA(new NFA(definition)));
 				specDefinitions.put(id, definition);
             }
