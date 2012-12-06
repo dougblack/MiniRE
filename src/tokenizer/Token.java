@@ -46,4 +46,12 @@ public class Token {
 	public String toString() {
 		return id + ": " + string;
 	}
+
+    public boolean equals(String testId) {
+        return testId.equals(id);
+    }
+
+    public boolean notEquals(String testId) {
+        return !this.equals(testId);
+    }
 }
