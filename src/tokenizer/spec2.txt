@@ -1,0 +1,21 @@
+%%  Definitions for character classes will be contained in this section ? examples below
+$DIGIT [0-9]
+$NON-ZERO [^0]  IN  $DIGIT
+$HALF-SET [0-5] IN $DIGIT
+$SECOND-HALF-SET [^0-5] IN $DIGIT
+$SMALLCASE [a-z]
+$INT ($DIGIT)+
+$FLOAT ($DIGIT)+ \. ($DIGIT)+
+$LETTER [A-Za-z]
+$UPPERCASE [^a-z] IN $LETTER         
+$LOWER [^A-Z] IN $CHAR
+$HALFUPPERCASE [^a-zA-K] IN $LETTER
+%%  Token definitions will be contained in this section using regexes ? examples below
+$IDENTIFIER $SMALLCASE ($LETTER | $DIGIT)*
+$CONSTANT $UPPERCASE ($LETTER | $DIGIT)*
+$ASSIGN =
+$PLUS \+
+$MULTIPLY \*
+$PERIOD \.
+$PRINT PRINT
+

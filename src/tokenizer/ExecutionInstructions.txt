@@ -1,0 +1,11 @@
+Doug Black, Alazar Tamrat, Al Leister, Chris Chang
+CS 3240 A
+Project 1 – Phase 1
+
+
+To generate tokens from a program file using definitions in a grammar file, run:
+
+    java Driver <grammar file> <program file>
+
+Replace <grammar file> with the name of the grammar file and <program file> with
+the name of the program file. Be sure to list the arguments in this order.
