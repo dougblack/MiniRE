@@ -31,15 +31,6 @@ public class Evaluator {
 
         return list.toString();
         
-		/*String intersection = "";
-		for(int x=0; x<a.length; x++)
-			for(int y=0; y<b.length; y++){
-				
-				if (a[x].compareTo(b[y]) == 0)
-					intersection+=b[y];
-			}
-		
-		return intersection;*/	
 	}
 	
 	public static String union(List<String> list1, List<String> list2){
@@ -52,21 +43,32 @@ public class Evaluator {
 	        ArrayList<String> list = new ArrayList<String>(set);
 	        return list.toString();
 	        
-		/*String union = "";
-		String intersection = inters(a,b);
-		String i_arr[] = intersection.split(" ");
-		for (int x=0; x<a.length; x++){
-			if(Arrays.asList(i_arr).contains(a[x]))
-				continue;
-			union+=a[x];
- 		}*/
-		
-		
+	}
+	
+	public static String maxfreqstring(String string){
+		return maxfreqstring(string.split(" "));
 	}
 	
 	public static String maxfreqstring(String string[]){
 		
-		Set<String> set = new HashSet<String>();
-		return "";
+		String freqstring="";
+		int freq = 0;
+		HashMap<String,Integer> map = new HashMap<String,Integer>();
+		for (int x=0; x<string.length; x++)
+		{
+			if(map.containsKey(string[x])){
+				int this_freq = (map.get(string[x])).intValue()+1;
+				map.put(string[x], this_freq);
+				if(freq<this_freq && this_freq>1){
+					freq = this_freq;
+					freqstring = string[x];
+				}
+			}
+			else{
+				map.put(string[x], 1);
+			}
+		}
+		
+		return freqstring;
 	}
 }
