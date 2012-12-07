@@ -5,7 +5,6 @@ import java.nio.charset.Charset;
 public class GetChar { 
    private Reader in; // internal file name for input stream
    private BufferedReader reader;
-   private int index; // index of the previous character that was read from the file
     
    public GetChar (String filename) throws FileNotFoundException, IOException { 
 	   File file = new File(filename);
@@ -13,7 +12,6 @@ public class GetChar {
 	   new InputStreamReader(
 		        new FileInputStream(file),
 		        Charset.forName("UTF-8")));
-       index = 0;
    }
 
    public char getNextChar() {
@@ -23,20 +21,6 @@ public class GetChar {
       } catch (IOException e) {
          System.out.println("char exception");
       }
-      if (ch != '\r') {
-        index++;
-      }
       return ch;
    }
-
-    /**
-     * Returns the index of the previous character that was read from the file
-     * 
-
-     * @return The index of the previous character that was read from the file
-
-     */
-	public int getIndex() {
-		return index;
-	}
 }

@@ -6,24 +6,31 @@ package tokenizer;
 public class Token {
     private String id; // token identifier as given in a grammar file
 	private String string; // literal token string from a program file
-    private int index; // index of the first character of the token's string in a file
 	
+	public int line;
+	
+	private int start;
+	private  int end;
+	private int row;
     /**
-     * Constructs a token with id as its identifier, string as the literal
-     * string it represents, and index as the first character of the string
-     * in a particular file
+     * Constructs a token with id as its identifier and string as the literal
+     * string it represents
      * 
      * @param id The identifier for this token; from a list in a grammar file
      * @param string The literal string this token represents
-     * @param index Index of the first character of the token's string in a
-     *          particular file
      */
-	public Token(String id, String string, int index) {
+	public Token(String id, String string) {
 		this.id = id;
 		this.string = string;
-        this.index = index;
 	}
 	
+	public Token(String id, String string, int start, int end, int row) {
+		this.id = id;
+		this.string = string;
+		this.start = start;
+		this.end = end;
+		this.row = row;
+	}
     /**
      * Returns this token's identifier
      * 
@@ -32,10 +39,6 @@ public class Token {
 	public String getId() {
 		return id;
 	}
-
-    public void setId(String newId) {
-        this.id = newId;
-    }
 	
     /**
      * Returns the literal string this token represents
@@ -45,27 +48,15 @@ public class Token {
 	public String getString() {
 		return string;
 	}
-	
-    /**
-     * Returns the index of the first character of this token's string in a file
-     * 
 
-     * @return The index of the first character of the token's string in a file
-
-     */
-	public int getIndex() {
-		return index;
-	}
-	
     /**
      * Overrides the generic toString method
      * 
-     * @return This token's identifier, the literal string this token
-     *          represents, and the index of the first character of this
-     *          token in a particular file
+     * @return This token's identifier and the literal string this token
+     *          represents
      */
 	public String toString() {
-		return id + ": " + string + " @" + index;
+		return id + ": " + string;
 	}
 
     public boolean equals(String testId) {
@@ -75,4 +66,10 @@ public class Token {
     public boolean notEquals(String testId) {
         return !this.equals(testId);
     }
+    
+    //accessors
+    public int getStart(){return this.start;}
+    public int getEnd() {return this.end;}
+    public int getRow(){return this.row;}
+    
 }
