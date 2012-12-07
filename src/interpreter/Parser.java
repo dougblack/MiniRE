@@ -19,6 +19,10 @@ public class Parser {
 		token = tkzr.peekToken();
 	}
 
+    /*
+     * This method parses the token stream and builds a Syntax Tree.
+     * <MiniRE-program> ::= begin <statement-list> end
+     */
     public SyntaxTreeNode parse() {
         System.out.println("BUILDING TREE...");
         SyntaxTreeNode program = new SyntaxTreeNode("PROGRAM");
@@ -31,7 +35,10 @@ public class Parser {
         System.out.println("TREE BUILT!");
         return program;
     }
-	
+
+    /*
+     * <statement-list> ::= <statement><statement-list-tail> 
+     */	
 	public SyntaxTreeNode statement_list() {
         SyntaxTreeNode statementListNode = new SyntaxTreeNode("STATEMENT-LIST");
         stack.push(statementListNode);
@@ -40,7 +47,10 @@ public class Parser {
         stack.pop();
         return statementListNode;
 	}
-	
+    
+    /*
+     * <statement-list-tail> ::= <statement><statement-list-tail> | <epsilon>
+     */	
 	public SyntaxTreeNode statement_list_tail() {
 
         SyntaxTreeNode statementListTailNode = new SyntaxTreeNode("STATEMENT-LIST-TAIL");
@@ -57,7 +67,11 @@ public class Parser {
 	}
 
     /*
-     * Not done.
+     * Kinda done.
+     * <statement> ::= replace REGEX with ASCII-STR in  <file-names> ;
+     * <statement> ::= recursivereplace REGEX with ASCII-STR in  <file-names> ;
+     * <statement> ::= ID = <statement-righthand> ;
+     * <statement> ::= print ( <exp-list> ) ;
      */
 	public SyntaxTreeNode statement() {
         SyntaxTreeNode statementNode = new SyntaxTreeNode("STATEMENT");
@@ -102,6 +116,9 @@ public class Parser {
         return statementNode;
 	}
 
+    /*
+     * <file-names> ::=  <source-file>  >!  <destination-file>
+     */
     public SyntaxTreeNode file_names() {
         SyntaxTreeNode fileNamesNode = new SyntaxTreeNode("FILE-NAMES");
         stack.push(fileNamesNode);
@@ -112,6 +129,9 @@ public class Parser {
         return fileNamesNode;
     }
 
+    /*
+     * <source-file> ::= ASCII-STR  
+     */
     public SyntaxTreeNode source_file() {
         SyntaxTreeNode sourceFileNode = new SyntaxTreeNode("SOURCE-FILE");
         stack.push(sourceFileNode);
@@ -120,6 +140,9 @@ public class Parser {
         return sourceFileNode;
     }
 
+    /*
+     * <destination-file> ::= ASCII-STR
+     */
     public SyntaxTreeNode destination_file() {
         SyntaxTreeNode destinationFileNode = new SyntaxTreeNode("DESTINATION-FILE");
         stack.push(destinationFileNode);
@@ -127,7 +150,10 @@ public class Parser {
         stack.pop();
         return destinationFileNode;
     }
-
+    
+    /*
+     * <exp-list> ::= <exp> <exp-list-tail>
+     */
     public SyntaxTreeNode exp_list() {
         SyntaxTreeNode expListNode = new SyntaxTreeNode("EXP-LIST");
         stack.push(expListNode);
@@ -138,7 +164,9 @@ public class Parser {
         stack.pop();
         return expListNode;
     }
-
+    /*
+     * <exp-list-tail> ::= , <exp> <exp-list-tail> | <epsilon>
+     */
     public SyntaxTreeNode exp_list_tail() {
         SyntaxTreeNode expListTailNode = new SyntaxTreeNode("EXP-LIST-TAIL");
         stack.push(expListTailNode);
@@ -149,7 +177,11 @@ public class Parser {
         stack.pop();
         return expListTailNode;
     }
-
+    
+    /*
+     * <exp> ::= ID  | ( <exp> ) 
+     * <exp> ::=  <term> <exp-tail>
+     */
     public SyntaxTreeNode exp() {
         SyntaxTreeNode expNode = new SyntaxTreeNode("EXP");
         stack.push(expNode);
@@ -165,7 +197,9 @@ public class Parser {
         stack.pop();
         return expNode;
     }
-
+    /*
+     * <exp-tail> ::= <bin-op> <term> <exp-tail> | <epsilon>
+     */
     public SyntaxTreeNode exp_tail() {
         SyntaxTreeNode expTailNode = new SyntaxTreeNode("EXP-TAIL");
         stack.push(expTailNode);
@@ -178,6 +212,9 @@ public class Parser {
         return expTailNode;
     }
 
+    /*
+     * <term> ::=  find REGEX in  <file-name>  
+     */
     public SyntaxTreeNode term() {
         SyntaxTreeNode termNode = new SyntaxTreeNode("TERM");
         stack.push(termNode);
@@ -189,6 +226,9 @@ public class Parser {
         return termNode;
     }
 
+    /*
+     * <file-name> ::=  ASCII-STR
+     */
     public SyntaxTreeNode file_name() {
         SyntaxTreeNode fileNameNode = new SyntaxTreeNode("FILE-NAME");
         stack.push(fileNameNode);
@@ -197,7 +237,10 @@ public class Parser {
         return fileNameNode;
 
     }
-
+    
+    /*
+     * <bin-op> ::=  diff | union | inters
+     */
     public SyntaxTreeNode bin_op() {
         SyntaxTreeNode binOpNode = new SyntaxTreeNode("BIN-OP");
         stack.push(binOpNode);
@@ -212,6 +255,9 @@ public class Parser {
         return binOpNode;
     }
 
+    /*
+     * Emits an error message and quits the program.
+     */
 	public void error(String failedGrammar) {
         SyntaxTreeNode last = stack.pop();
         last = stack.pop();
@@ -220,7 +266,11 @@ public class Parser {
         System.out.println("current token: " + token.getId() + " - " + token.getString() );
 		System.exit(0);
 	}
-	
+
+    /*
+     * Accepts the given token, adds it to the tree, and
+     * grabs the next token.
+     */	
     public boolean accept(String id) {
         if (token.equals(id)) {
             tkzr.consumeToken();
@@ -232,16 +282,26 @@ public class Parser {
         return false;
     }
 
+    /*
+     * Checks if the next token is of the type id.
+     */
     public boolean peek(String id) {
         return token.equals(id);
     }
 
+    /*
+     * Returns an error if the next token is not the one
+     * that was expected.
+     */
     public void expect(String id, String grammar) {
         if (accept(id))
             return;
         error(grammar);
     }
 
+    /*
+     * Same as except, except that it doesn't consume the token.
+     */
     public void check(String id, String grammar) {
         if (token.equals(id)) {
             return;
@@ -249,6 +309,9 @@ public class Parser {
         error(grammar);
     }
 
+    /*
+     * This returns the value of the next token unconditionally.
+     */
     public String take() {
         String ret = token.getString();
         token = tkzr.peekToken();
