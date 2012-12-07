@@ -55,9 +55,9 @@ public class SyntaxTreeNode {
                 if (node.children.isEmpty())
                     continue;
 
-               for (int i = node.children.size()-1; i >= 0; i--) {
-                   nextLevelTemp.push(node.children.get(i));
-               }
+                for (int i = node.children.size()-1; i >= 0; i--) {
+                    nextLevelTemp.push(node.children.get(i));
+                }
             }
             level++;
             nextLevel = nextLevelTemp;
