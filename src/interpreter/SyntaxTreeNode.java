@@ -9,22 +9,26 @@ public class SyntaxTreeNode {
 
     Token token;
     ArrayList<SyntaxTreeNode> children;
-    SyntaxTreeNode sibling;
     int lineNumber;
     String id;
     String value;
     String nodeType;
 
+    /**
+     * This constructor is used when a terminal was enountered.
+     * @param nodeToken the token of the terminal
+     * @param tokenLineNumber this is probably deprecated.
+     */
     public SyntaxTreeNode(Token nodeToken, int tokenLineNumber) {
-        children = new ArrayList<SyntaxTreeNode>();
-        token = nodeToken;
-        lineNumber = tokenLineNumber;
-        id = token.getId();
-        value = token.getString();
+        this.children = new ArrayList<SyntaxTreeNode>();
+        this.token = nodeToken;
+        this.lineNumber = tokenLineNumber;
+        this.id = token.getId();
+        this.value = token.getString();
     }
 
     public SyntaxTreeNode(String nodeType) {
-        children = new ArrayList<SyntaxTreeNode>();
+        this.children = new ArrayList<SyntaxTreeNode>();
         this.nodeType = nodeType;
     }
 
@@ -32,13 +36,6 @@ public class SyntaxTreeNode {
         children.add(newChild);
     }
 
-    public void setSibling(SyntaxTreeNode newSibling) {
-        sibling = newSibling;
-    }
-
-    /**
-     * This will use level order printing.
-     */
     public void printLevels() {
         Stack<SyntaxTreeNode> nextLevel = new Stack<SyntaxTreeNode>();
         nextLevel.add(this);
@@ -52,8 +49,6 @@ public class SyntaxTreeNode {
                     System.out.println("Node: " + node.id + "," + node.value);
                 else
                     System.out.println("Node: " + node.nodeType);
-                if (node.children.isEmpty())
-                    continue;
 
                 for (int i = node.children.size()-1; i >= 0; i--) {
                     nextLevelTemp.push(node.children.get(i));
