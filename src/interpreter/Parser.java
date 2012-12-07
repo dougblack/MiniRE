@@ -59,9 +59,9 @@ public class Parser {
             return null;
 
 		statementListTailNode.addChild(statement());
-        if (peek("$REPLACE") || peek("$RECURSIVEREPLACE") || peek("$PRINT")
+        if (peek("$REPLACE") || peek("$RECREP") || peek("$PRINT")
                 || peek("$ID"))
-		statementListTailNode.addChild(statement_list_tail());
+            statementListTailNode.addChild(statement_list_tail());
         stack.pop();
         return statementListTailNode;
 	}
@@ -85,7 +85,7 @@ public class Parser {
             while(peek("$ASCII-STR"))
                 statementNode.addChild(file_names());
             expect("$SEMICOLON", "statement: missing SEMICOLON");
-        } else if (accept("$RECURSIVEREPLACE")) {
+        } else if (accept("$RECREP")) {
             expect("$REGEX", "statement: not valid REGEX");
             expect("$WITH", "statement: missing 'width'");
             expect("$$ASCII-STR", "statement: not valid $ASCII-STR");
@@ -98,23 +98,34 @@ public class Parser {
             expect("$OPENPARENS", "statement: missing lparen");
             statementNode.addChild(exp_list());
             expect("$CLOSEPARENS", "statement: missing rparen");
-            expect("$SEMICOLON", "statement: missing semi-colon");
+            expect("$SEMICOLON", "statement: missing semicolon");
         } else if (accept("$ID")) {
-            expect("$EQ", "statement: missing assign");
-            if (accept("$HASH")) {
-                statementNode.addChild(exp());
-            } else if (accept("$MAXFREQSTRING"))  {
-                expect("$OPENPARENS", "statement: missing OPENPARENS");
-                expect("$ID", "statement: missing ID");
-                expect("$CLOSEPARENS", "statement: missing CLOSEPARENS");
-            } else {
-                statementNode.addChild(exp());
-            }
-            expect("$SEMICOLON", "statement: missing SEMICOLON");
+            expect("$EQ", "statment: missing equal sign");
+            statementNode.addChild(statement_righthand());
+            expect("$SEMICOLON", "statement: missing semicolon");
         }
         stack.pop();
         return statementNode;
 	}
+
+    /**
+     * <statement-righthand> ::= <exp> | # <exp> | maxfreqstring (ID)
+     */
+    public SyntaxTreeNode statement_righthand() {
+        SyntaxTreeNode statementRighthandNode = new SyntaxTreeNode("STATEMENT-RIGHTHAND");
+        stack.push(statementRighthandNode);
+        if (accept("$HASH")) {
+            statementRighthandNode.addChild(exp());
+        } else if (accept("$MAXFREQ")) {
+            expect("$OPENPARENS", "statement: missing OPENPARENS");
+            expect("$ID", "statement: missing ID");
+            expect("$CLOSEPARENS", "statement: missing CLOSEPARENS");
+        } else {
+            statementRighthandNode.addChild(exp());
+        }
+        stack.pop();
+        return statementRighthandNode;
+    }
 
     /*
      * <file-names> ::=  <source-file>  >!  <destination-file>
