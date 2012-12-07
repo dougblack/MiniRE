@@ -28,8 +28,8 @@ public class Parser {
         SyntaxTreeNode program = new SyntaxTreeNode("PROGRAM");
         stack.push(program);
         expect("$BEGIN", "start: begin expected");
-        program.addChild(statement_list());
-        check("$END", "start: end expected");
+        stack.peek().addChild(statement_list());
+        expect("$END", "start: end expected");
         stack.pop();
 
         System.out.println("TREE BUILT!");
@@ -275,8 +275,13 @@ public class Parser {
         if (token.equals(id)) {
             tkzr.consumeToken();
             SyntaxTreeNode newNode = new SyntaxTreeNode(token, lineNumber);
+            System.out.println("Accepted " + token + " " + lineNumber);
             stack.peek().addChild(newNode);
-            token = tkzr.peekToken();
+            try {
+                token = tkzr.peekToken();
+            } catch (IndexOutOfBoundsException ioob) {
+                // done parsing.
+            }
             return true;
         }
         return false;
