@@ -27,6 +27,10 @@ public class Token {
 	public String getId() {
 		return id;
 	}
+
+    public void setId(String newId) {
+        this.id = newId;
+    }
 	
     /**
      * Returns the literal string this token represents

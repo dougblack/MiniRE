@@ -20,12 +20,15 @@ public class Parser {
 	}
 
     public SyntaxTreeNode parse() {
+        System.out.println("BUILDING TREE...");
         SyntaxTreeNode program = new SyntaxTreeNode("PROGRAM");
         stack.push(program);
         expect("$BEGIN", "start: begin expected");
         program.addChild(statement_list());
-        expect("$END", "start: end expected");
+        check("$END", "start: end expected");
         stack.pop();
+
+        System.out.println("TREE BUILT!");
         return program;
     }
 	
@@ -46,6 +49,8 @@ public class Parser {
             return null;
 
 		statementListTailNode.addChild(statement());
+        if (peek("$REPLACE") || peek("$RECURSIVEREPLACE") || peek("$PRINT")
+                || peek("$ID"))
 		statementListTailNode.addChild(statement_list_tail());
         stack.pop();
         return statementListTailNode;
@@ -60,35 +65,38 @@ public class Parser {
         if (accept("$REPLACE")) {
             expect("$REGEX", "statement: not valid REGEX");
             expect("$WITH", "statement: missing 'width'");
-            expect("$ASCII-STR", "statement: not valid ASCII-STR");
+            expect("$ASCII-STR", "statement: not valid $ASCII-STR");
             expect("$IN", "statement: missing 'in'");
-            check("ASCII-STR", "statement: missing FILE-NAMES");
-            while(peek("ASCII-STR"))
+            check("$ASCII-STR", "statement: missing FILE-NAMES");
+            while(peek("$ASCII-STR"))
                 statementNode.addChild(file_names());
+            expect("$SEMICOLON", "statement: missing SEMICOLON");
         } else if (accept("$RECURSIVEREPLACE")) {
             expect("$REGEX", "statement: not valid REGEX");
             expect("$WITH", "statement: missing 'width'");
-            expect("$ASCII-STR", "statement: not valid ASCII-STR");
+            expect("$$ASCII-STR", "statement: not valid $ASCII-STR");
             expect("$IN", "statement: missing 'in'");
-            check("ASCII-STR", "statement: missing FILE-NAMES");
-            while(peek("ASCII-STR"))
+            check("$ASCII-STR", "statement: missing FILE-NAMES");
+            while(peek("$ASCII-STR"))
                 statementNode.addChild(file_names());
+            expect("$SEMICOLON", "statement: missing SEMICOLON");
         } else if (accept("$PRINT")) {
-            expect("$LPAREN", "statement: missing lparen");
+            expect("$OPENPARENS", "statement: missing lparen");
             statementNode.addChild(exp_list());
-            expect("$RPAREN", "statement: missing rparen");
+            expect("$CLOSEPARENS", "statement: missing rparen");
             expect("$SEMICOLON", "statement: missing semi-colon");
         } else if (accept("$ID")) {
-            expect("$ASSIGN", "statement: missing assign");
+            expect("$EQ", "statement: missing assign");
             if (accept("$HASH")) {
                 statementNode.addChild(exp());
             } else if (accept("$MAXFREQSTRING"))  {
-                expect("$LPAREN", "statement: missing LPAREN");
+                expect("$OPENPARENS", "statement: missing OPENPARENS");
                 expect("$ID", "statement: missing ID");
-                expect("$RPAREN", "statement: missing RPAREN");
+                expect("$CLOSEPARENS", "statement: missing CLOSEPARENS");
+            } else {
+                statementNode.addChild(exp());
             }
-        } else {
-            error("statement: malformed statement");
+            expect("$SEMICOLON", "statement: missing SEMICOLON");
         }
         stack.pop();
         return statementNode;
@@ -98,7 +106,7 @@ public class Parser {
         SyntaxTreeNode fileNamesNode = new SyntaxTreeNode("FILE-NAMES");
         stack.push(fileNamesNode);
         fileNamesNode.addChild(source_file());
-        expect("$PIPE-THING", "file_names: missing pipe-thing");
+        expect("$GRTNOT", "file_names: missing pipe-thing");
         fileNamesNode.addChild(destination_file());
         stack.pop();
         return fileNamesNode;
@@ -137,9 +145,6 @@ public class Parser {
         if (accept("$COMMA")) {
             expListTailNode.addChild(exp());
             expListTailNode.addChild(exp_list_tail());
-        } else if (accept("$BINOP")) {
-            expListTailNode.addChild(term());
-            expListTailNode.addChild(exp_list_tail());
         }
         stack.pop();
         return expListTailNode;
@@ -150,9 +155,9 @@ public class Parser {
         stack.push(expNode);
         if (accept("$ID")) {
             // pass
-        } else if (accept("$LPAREN")) {
+        } else if (accept("$OPENPARENS")) {
             expNode.addChild(exp());
-            expect("$RPAREN", "exp: missing rparen");
+            expect("$CLOSEPARENS", "exp: missing rparen");
         } else {
             expNode.addChild(term());
             expNode.addChild(exp_tail());
@@ -164,7 +169,7 @@ public class Parser {
     public SyntaxTreeNode exp_tail() {
         SyntaxTreeNode expTailNode = new SyntaxTreeNode("EXP-TAIL");
         stack.push(expTailNode);
-        if (!accept("$NULL")) {
+        if (peek("$UNON") || peek("$INTERS") || peek("#$DIFF")) {
             expTailNode.addChild(bin_op());
             expTailNode.addChild(term());
             expTailNode.addChild(exp_tail());
@@ -187,7 +192,7 @@ public class Parser {
     public SyntaxTreeNode file_name() {
         SyntaxTreeNode fileNameNode = new SyntaxTreeNode("FILE-NAME");
         stack.push(fileNameNode);
-        expect("$ASCII-TERM", "file_name: not a valid file name");
+        expect("$ASCII-STR", "file_name: not a valid file name");
         stack.pop();
         return fileNameNode;
 
@@ -208,12 +213,17 @@ public class Parser {
     }
 
 	public void error(String failedGrammar) {
+        SyntaxTreeNode last = stack.pop();
+        last = stack.pop();
 		System.out.println("error in " + failedGrammar);
+        System.out.println("current rule " + last.nodeType);
+        System.out.println("current token: " + token.getId() + " - " + token.getString() );
 		System.exit(0);
 	}
 	
     public boolean accept(String id) {
         if (token.equals(id)) {
+            tkzr.consumeToken();
             SyntaxTreeNode newNode = new SyntaxTreeNode(token, lineNumber);
             stack.peek().addChild(newNode);
             token = tkzr.peekToken();
