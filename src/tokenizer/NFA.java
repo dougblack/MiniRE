@@ -43,7 +43,6 @@ public class NFA {
 	}
 
 	public NFA(String regex) {
-        System.out.println("Working on: " + regex);
 		nodes = new HashSet<Node>();
 		thisRegex = regex;
 		thisNFA = regexToAutomata(regex);

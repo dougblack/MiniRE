@@ -14,48 +14,50 @@ import java.util.Stack;
  */
 public class DFA {
 
+    int priority;
+
 	public static void main(String args[]) {
 
-		NFA nfa1 = new NFA("(a|b)*\\.(b|c)*");
-        DFA dfa1 = new DFA(nfa1);
-        //dfa1.printStructure();
-        dfa1.testDFA("", ".", "ab.bc", "aa.ba", ".bb", "abaabab.cbcbc");
-		
-		NFA nfa2 = new NFA(".");
-        DFA dfa2 = new DFA(nfa2);
-        //dfa2.printStructure();
-        dfa2.testDFA("", "ab.", "..", ".", "9", "S", ".bb", "abaabab.cbcbc");
-		
-		NFA nfa3 = new NFA("(ab)*");
-        DFA dfa3 = new DFA(nfa3);
-        //dfa3.printStructure();
-        dfa3.testDFA("", "ab.bc", "aaba", "ababab", "aba");
-		
-		NFA nfa4 = new NFA("(dougblack)+");
-        DFA dfa4 = new DFA(nfa4);
-        //dfa4.printStructure();
-        dfa4.testDFA("", "(dougblack)+", "(dougblack)", "dougblack",
-            "dougblackdougblach", "dougblackdougblack");
-		
-		NFA nfa5 = new NFA("[0-9]*");
-        DFA dfa5 = new DFA(nfa5);
-        //dfa5.printStructure();
-        dfa5.testDFA("", "0", "4", "9", "00009", "00", "11", "9999S9999");
-		
-		NFA nfa6 = new NFA("[^a]*");
-        DFA dfa6 = new DFA(nfa6);
-        //dfa6.printStructure();
-        dfa6.testDFA("", "aa", "a", "b", "A", "asd a ", " a");
-		
-		NFA nfa7 = new NFA("");
-        DFA dfa7 = new DFA(nfa7);
-        //dfa7.printStructure();
-        dfa7.testDFA("ab", "", " ", "azebra", "almanac");
-		
-		NFA nfa8 = new NFA("a(|z)");
-        DFA dfa8 = new DFA(nfa8);
-        //dfa8.printStructure();
-        dfa8.testDFA("a", "az", "", " ", "z", "b4", "9");
+//		NFA nfa1 = new NFA("(a|b)*\\.(b|c)*");
+//        DFA dfa1 = new DFA(nfa1);
+//        //dfa1.printStructure();
+//        dfa1.testDFA("", ".", "ab.bc", "aa.ba", ".bb", "abaabab.cbcbc");
+//
+//		NFA nfa2 = new NFA(".");
+//        DFA dfa2 = new DFA(nfa2);
+//        //dfa2.printStructure();
+//        dfa2.testDFA("", "ab.", "..", ".", "9", "S", ".bb", "abaabab.cbcbc");
+//
+//		NFA nfa3 = new NFA("(ab)*");
+//        DFA dfa3 = new DFA(nfa3);
+//        //dfa3.printStructure();
+//        dfa3.testDFA("", "ab.bc", "aaba", "ababab", "aba");
+//
+//		NFA nfa4 = new NFA("(dougblack)+");
+//        DFA dfa4 = new DFA(nfa4);
+//        //dfa4.printStructure();
+//        dfa4.testDFA("", "(dougblack)+", "(dougblack)", "dougblack",
+//            "dougblackdougblach", "dougblackdougblack");
+//
+//		NFA nfa5 = new NFA("[0-9]*");
+//        DFA dfa5 = new DFA(nfa5);
+//        //dfa5.printStructure();
+//        dfa5.testDFA("", "0", "4", "9", "00009", "00", "11", "9999S9999");
+//
+//		NFA nfa6 = new NFA("[^a]*");
+//        DFA dfa6 = new DFA(nfa6);
+//        //dfa6.printStructure();
+//        dfa6.testDFA("", "aa", "a", "b", "A", "asd a ", " a");
+//
+//		NFA nfa7 = new NFA("");
+//        DFA dfa7 = new DFA(nfa7);
+//        //dfa7.printStructure();
+//        dfa7.testDFA("ab", "", " ", "azebra", "almanac");
+//
+//		NFA nfa8 = new NFA("a(|z)");
+//        DFA dfa8 = new DFA(nfa8);
+//        //dfa8.printStructure();
+//        dfa8.testDFA("a", "az", "", " ", "z", "b4", "9");
 	}
 
     private SetAutomata sMata; // contains the actual states and transitions
@@ -67,8 +69,9 @@ public class DFA {
      *
      * @param nfa An NFA
      */
-	public DFA(NFA nfa) {
+	public DFA(NFA nfa, int tokenPriority) {
         sMata = new SetAutomata();
+        this.priority = tokenPriority;
 
 		if (nfa != null) {
             buildFromNFA(nfa);

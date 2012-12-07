@@ -19,16 +19,26 @@ public class Parser {
 		token = tkzr.peekToken();
 	}
 
+    /*
+     * This method parses the token stream and builds a Syntax Tree.
+     * <MiniRE-program> ::= begin <statement-list> end
+     */
     public SyntaxTreeNode parse() {
+        System.out.println("BUILDING TREE...");
         SyntaxTreeNode program = new SyntaxTreeNode("PROGRAM");
         stack.push(program);
         expect("$BEGIN", "start: begin expected");
         program.addChild(statement_list());
-        expect("$END", "start: end expected");
+        check("$END", "start: end expected");
         stack.pop();
+
+        System.out.println("TREE BUILT!");
         return program;
     }
-	
+
+    /*
+     * <statement-list> ::= <statement><statement-list-tail> 
+     */	
 	public SyntaxTreeNode statement_list() {
         SyntaxTreeNode statementListNode = new SyntaxTreeNode("STATEMENT-LIST");
         stack.push(statementListNode);
@@ -37,7 +47,10 @@ public class Parser {
         stack.pop();
         return statementListNode;
 	}
-	
+    
+    /*
+     * <statement-list-tail> ::= <statement><statement-list-tail> | <epsilon>
+     */	
 	public SyntaxTreeNode statement_list_tail() {
 
         SyntaxTreeNode statementListTailNode = new SyntaxTreeNode("STATEMENT-LIST-TAIL");
@@ -46,13 +59,19 @@ public class Parser {
             return null;
 
 		statementListTailNode.addChild(statement());
+        if (peek("$REPLACE") || peek("$RECURSIVEREPLACE") || peek("$PRINT")
+                || peek("$ID"))
 		statementListTailNode.addChild(statement_list_tail());
         stack.pop();
         return statementListTailNode;
 	}
 
     /*
-     * Not done.
+     * Kinda done.
+     * <statement> ::= replace REGEX with ASCII-STR in  <file-names> ;
+     * <statement> ::= recursivereplace REGEX with ASCII-STR in  <file-names> ;
+     * <statement> ::= ID = <statement-righthand> ;
+     * <statement> ::= print ( <exp-list> ) ;
      */
 	public SyntaxTreeNode statement() {
         SyntaxTreeNode statementNode = new SyntaxTreeNode("STATEMENT");
@@ -60,50 +79,59 @@ public class Parser {
         if (accept("$REPLACE")) {
             expect("$REGEX", "statement: not valid REGEX");
             expect("$WITH", "statement: missing 'width'");
-            expect("$ASCII-STR", "statement: not valid ASCII-STR");
+            expect("$ASCII-STR", "statement: not valid $ASCII-STR");
             expect("$IN", "statement: missing 'in'");
-            check("ASCII-STR", "statement: missing FILE-NAMES");
-            while(peek("ASCII-STR"))
+            check("$ASCII-STR", "statement: missing FILE-NAMES");
+            while(peek("$ASCII-STR"))
                 statementNode.addChild(file_names());
+            expect("$SEMICOLON", "statement: missing SEMICOLON");
         } else if (accept("$RECURSIVEREPLACE")) {
             expect("$REGEX", "statement: not valid REGEX");
             expect("$WITH", "statement: missing 'width'");
-            expect("$ASCII-STR", "statement: not valid ASCII-STR");
+            expect("$$ASCII-STR", "statement: not valid $ASCII-STR");
             expect("$IN", "statement: missing 'in'");
-            check("ASCII-STR", "statement: missing FILE-NAMES");
-            while(peek("ASCII-STR"))
+            check("$ASCII-STR", "statement: missing FILE-NAMES");
+            while(peek("$ASCII-STR"))
                 statementNode.addChild(file_names());
+            expect("$SEMICOLON", "statement: missing SEMICOLON");
         } else if (accept("$PRINT")) {
-            expect("$LPAREN", "statement: missing lparen");
+            expect("$OPENPARENS", "statement: missing lparen");
             statementNode.addChild(exp_list());
-            expect("$RPAREN", "statement: missing rparen");
+            expect("$CLOSEPARENS", "statement: missing rparen");
             expect("$SEMICOLON", "statement: missing semi-colon");
         } else if (accept("$ID")) {
-            expect("$ASSIGN", "statement: missing assign");
+            expect("$EQ", "statement: missing assign");
             if (accept("$HASH")) {
                 statementNode.addChild(exp());
             } else if (accept("$MAXFREQSTRING"))  {
-                expect("$LPAREN", "statement: missing LPAREN");
+                expect("$OPENPARENS", "statement: missing OPENPARENS");
                 expect("$ID", "statement: missing ID");
-                expect("$RPAREN", "statement: missing RPAREN");
+                expect("$CLOSEPARENS", "statement: missing CLOSEPARENS");
+            } else {
+                statementNode.addChild(exp());
             }
-        } else {
-            error("statement: malformed statement");
+            expect("$SEMICOLON", "statement: missing SEMICOLON");
         }
         stack.pop();
         return statementNode;
 	}
 
+    /*
+     * <file-names> ::=  <source-file>  >!  <destination-file>
+     */
     public SyntaxTreeNode file_names() {
         SyntaxTreeNode fileNamesNode = new SyntaxTreeNode("FILE-NAMES");
         stack.push(fileNamesNode);
         fileNamesNode.addChild(source_file());
-        expect("$PIPE-THING", "file_names: missing pipe-thing");
+        expect("$GRTNOT", "file_names: missing pipe-thing");
         fileNamesNode.addChild(destination_file());
         stack.pop();
         return fileNamesNode;
     }
 
+    /*
+     * <source-file> ::= ASCII-STR  
+     */
     public SyntaxTreeNode source_file() {
         SyntaxTreeNode sourceFileNode = new SyntaxTreeNode("SOURCE-FILE");
         stack.push(sourceFileNode);
@@ -112,6 +140,9 @@ public class Parser {
         return sourceFileNode;
     }
 
+    /*
+     * <destination-file> ::= ASCII-STR
+     */
     public SyntaxTreeNode destination_file() {
         SyntaxTreeNode destinationFileNode = new SyntaxTreeNode("DESTINATION-FILE");
         stack.push(destinationFileNode);
@@ -119,7 +150,10 @@ public class Parser {
         stack.pop();
         return destinationFileNode;
     }
-
+    
+    /*
+     * <exp-list> ::= <exp> <exp-list-tail>
+     */
     public SyntaxTreeNode exp_list() {
         SyntaxTreeNode expListNode = new SyntaxTreeNode("EXP-LIST");
         stack.push(expListNode);
@@ -130,29 +164,32 @@ public class Parser {
         stack.pop();
         return expListNode;
     }
-
+    /*
+     * <exp-list-tail> ::= , <exp> <exp-list-tail> | <epsilon>
+     */
     public SyntaxTreeNode exp_list_tail() {
         SyntaxTreeNode expListTailNode = new SyntaxTreeNode("EXP-LIST-TAIL");
         stack.push(expListTailNode);
         if (accept("$COMMA")) {
             expListTailNode.addChild(exp());
             expListTailNode.addChild(exp_list_tail());
-        } else if (accept("$BINOP")) {
-            expListTailNode.addChild(term());
-            expListTailNode.addChild(exp_list_tail());
         }
         stack.pop();
         return expListTailNode;
     }
-
+    
+    /*
+     * <exp> ::= ID  | ( <exp> ) 
+     * <exp> ::=  <term> <exp-tail>
+     */
     public SyntaxTreeNode exp() {
         SyntaxTreeNode expNode = new SyntaxTreeNode("EXP");
         stack.push(expNode);
         if (accept("$ID")) {
             // pass
-        } else if (accept("$LPAREN")) {
+        } else if (accept("$OPENPARENS")) {
             expNode.addChild(exp());
-            expect("$RPAREN", "exp: missing rparen");
+            expect("$CLOSEPARENS", "exp: missing rparen");
         } else {
             expNode.addChild(term());
             expNode.addChild(exp_tail());
@@ -160,11 +197,13 @@ public class Parser {
         stack.pop();
         return expNode;
     }
-
+    /*
+     * <exp-tail> ::= <bin-op> <term> <exp-tail> | <epsilon>
+     */
     public SyntaxTreeNode exp_tail() {
         SyntaxTreeNode expTailNode = new SyntaxTreeNode("EXP-TAIL");
         stack.push(expTailNode);
-        if (!accept("$NULL")) {
+        if (peek("$UNON") || peek("$INTERS") || peek("#$DIFF")) {
             expTailNode.addChild(bin_op());
             expTailNode.addChild(term());
             expTailNode.addChild(exp_tail());
@@ -173,6 +212,9 @@ public class Parser {
         return expTailNode;
     }
 
+    /*
+     * <term> ::=  find REGEX in  <file-name>  
+     */
     public SyntaxTreeNode term() {
         SyntaxTreeNode termNode = new SyntaxTreeNode("TERM");
         stack.push(termNode);
@@ -184,15 +226,21 @@ public class Parser {
         return termNode;
     }
 
+    /*
+     * <file-name> ::=  ASCII-STR
+     */
     public SyntaxTreeNode file_name() {
         SyntaxTreeNode fileNameNode = new SyntaxTreeNode("FILE-NAME");
         stack.push(fileNameNode);
-        expect("$ASCII-TERM", "file_name: not a valid file name");
+        expect("$ASCII-STR", "file_name: not a valid file name");
         stack.pop();
         return fileNameNode;
 
     }
-
+    
+    /*
+     * <bin-op> ::=  diff | union | inters
+     */
     public SyntaxTreeNode bin_op() {
         SyntaxTreeNode binOpNode = new SyntaxTreeNode("BIN-OP");
         stack.push(binOpNode);
@@ -207,13 +255,25 @@ public class Parser {
         return binOpNode;
     }
 
+    /*
+     * Emits an error message and quits the program.
+     */
 	public void error(String failedGrammar) {
+        SyntaxTreeNode last = stack.pop();
+        last = stack.pop();
 		System.out.println("error in " + failedGrammar);
+        System.out.println("current rule " + last.nodeType);
+        System.out.println("current token: " + token.getId() + " - " + token.getString() );
 		System.exit(0);
 	}
-	
+
+    /*
+     * Accepts the given token, adds it to the tree, and
+     * grabs the next token.
+     */	
     public boolean accept(String id) {
         if (token.equals(id)) {
+            tkzr.consumeToken();
             SyntaxTreeNode newNode = new SyntaxTreeNode(token, lineNumber);
             stack.peek().addChild(newNode);
             token = tkzr.peekToken();
@@ -222,16 +282,26 @@ public class Parser {
         return false;
     }
 
+    /*
+     * Checks if the next token is of the type id.
+     */
     public boolean peek(String id) {
         return token.equals(id);
     }
 
+    /*
+     * Returns an error if the next token is not the one
+     * that was expected.
+     */
     public void expect(String id, String grammar) {
         if (accept(id))
             return;
         error(grammar);
     }
 
+    /*
+     * Same as except, except that it doesn't consume the token.
+     */
     public void check(String id, String grammar) {
         if (token.equals(id)) {
             return;
@@ -239,6 +309,9 @@ public class Parser {
         error(grammar);
     }
 
+    /*
+     * This returns the value of the next token unconditionally.
+     */
     public String take() {
         String ret = token.getString();
         token = tkzr.peekToken();

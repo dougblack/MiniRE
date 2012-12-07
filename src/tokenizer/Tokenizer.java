@@ -56,7 +56,8 @@ public class Tokenizer {
                     System.out.println("Unknown token " + token.getString());
                     break;
                 }
-                System.out.println("TOKEN: " + token.getId());
+                if (token.getId().equals("$ID"))
+                    token = checkForReservedWord(token);
                 tokens.add(token);
             }
             
@@ -67,6 +68,35 @@ public class Tokenizer {
         if (!error) {
             System.out.println("Finished processing tokens");
         }
+    }
+
+    public Token checkForReservedWord(Token token) {
+        if (token.getString().equals("begin")) {
+            token.setId("$BEGIN");
+        } else if (token.getString().equals("end")) {
+            token.setId("$END");
+        } else if (token.getString().equals("find")) {
+            token.setId("$FIND");
+        } else if (token.getString().equals("with")) {
+            token.setId("$WITH");
+        } else if (token.getString().equals("in")) {
+            token.setId("$IN");
+        } else if (token.getString().equals("print")) {
+            token.setId("$PRINT");
+        } else if (token.getString().equals("replace")) {
+            token.setId("$REPLACE");
+        } else if (token.getString().equals("recursivereplace")) {
+            token.setId("$RECREP");
+        } else if (token.getString().equals("inters")) {
+            token.setId("$INTERS");
+        } else if (token.getString().equals("union")) {
+            token.setId("$UNION");
+        } else if (token.getString().equals("diff")) {
+            token.setId("$DIFF");
+        } else if (token.getString().equals("maxfreqstring")) {
+            token.setId("$MAXFREQ");
+        }
+        return token;
     }
 
     /**
@@ -89,6 +119,10 @@ public class Tokenizer {
     	boolean isMatch =  tokens.get(this.current_token_index).toString().equals(token.toString());
     	current_token_index++;
     	return isMatch;
+    }
+
+    public void consumeToken() {
+        this.current_token_index++;
     }
    
     /**

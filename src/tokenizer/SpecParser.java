@@ -9,11 +9,15 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.ArrayList;
 
+// TODO - FIX SPACES IN REGEX
+
 public class SpecParser {
 
 	HashMap<String, String> specDefinitions;
 	HashMap<String, DFA> specDFAs;
     ArrayList<String> orderedDefs;
+    ArrayList<String> characterClasses;
+    boolean inTokens;
 
 	public static void main(String args[]) {
 		SpecParser sp = new SpecParser();
@@ -31,6 +35,8 @@ public class SpecParser {
 		specDefinitions = new HashMap<String, String>();
 		specDFAs = new HashMap<String, DFA>();
         orderedDefs = new ArrayList<String>();
+        characterClasses = new ArrayList<String>();
+        inTokens = false;
 	}
 
 	/**
@@ -50,12 +56,10 @@ public class SpecParser {
 			String definition = specDefinitions.get(id);
 			if (definition.equals("-")) {
 				definition = "\\-";
-                System.out.println("SPEC: " + id);
 				specDefinitions.put(id, definition);
 			}
 			if (!definition.contains("$")) {
-                System.out.println("SPEC: " + id);
-				specDFAs.put(id, new DFA(new NFA(definition)));
+				specDFAs.put(id, new DFA(new NFA(definition), 0));
                 replacements.put(id, definition);
 			} else {
                 for (String defined : replacements.keySet()) {
@@ -86,8 +90,7 @@ public class SpecParser {
 								    definition = tokenDefinition.replace(rangeStart + "-" + rangeEnd,
 										    replaceString);
 								    specDefinitions.put(entry, definition);
-                                    System.out.println("SPEC: " + id);
-								    specDFAs.put(entry, new DFA(new NFA(definition)));
+								    specDFAs.put(entry, new DFA(new NFA(definition), 1));
 
 							    }
 						    } else {
@@ -97,8 +100,7 @@ public class SpecParser {
 								    definition = tokenDefinition.replace(rangeStart + "-" + rangeEnd,
 										    replaceString);
 								    specDefinitions.put(entry, definition);
-                                    System.out.println("SPEC: " + id);
-								    specDFAs.put(entry, new DFA(new NFA(definition)));
+								    specDFAs.put(entry, new DFA(new NFA(definition), 1));
 							    }
 						    }
 
@@ -108,11 +110,13 @@ public class SpecParser {
 			    }
                 //System.out.println(id + "  " + definition);
                 replacements.put(id, definition);
-                System.out.println("SPEC: " + id);
-			    specDFAs.put(id, new DFA(new NFA(definition)));
+			    specDFAs.put(id, new DFA(new NFA(definition), 1));
 				specDefinitions.put(id, definition);
             }
 		}
+        for (String characterId : characterClasses) {
+            specDFAs.remove(characterId);
+        }
 		return specDFAs;
 	}
 
@@ -130,10 +134,16 @@ public class SpecParser {
 
 			while ((strLine = br.readLine()) != null) {
 				String[] splitString = strLine.split(" ", 2);
-				if (splitString.length > 1 && !splitString[0].contains("%%")) {
+				if (!inTokens && splitString.length > 1 && !splitString[0].contains("%%")) {
+                    characterClasses.add(splitString[0]);
 					specDefinitions.put(splitString[0], splitString[1]);
                     orderedDefs.add(splitString[0]);
-				}
+				} else if (strLine.contains("%% TOKENS")) {
+                    inTokens = true;
+                } else if (inTokens) {
+                    specDefinitions.put(splitString[0], splitString[1]);
+                    orderedDefs.add(splitString[0]);
+                }
 			}
 
 			in.close();
