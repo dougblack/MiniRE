@@ -1,4 +1,4 @@
-package tokenizer;
+//package tokenizer;
 import java.io.*;
 import java.util.HashMap;
 
@@ -110,9 +110,9 @@ public class TableWalker {
             //System.out.println("no Token");
 
             if (c == EOF) {
-                return new Token("%% EOF", "");
+                return new Token("%% EOF", "", start, end, row);
             } else {
-                return new Token("%% ERROR", tokenString);
+                return new Token("%% ERROR", tokenString, start, end, row);
             }
         } else {
             //System.out.println("returning token " + tokenId + ": " +
@@ -123,7 +123,7 @@ public class TableWalker {
             end = start + lastAcceptedString.length();
             temp = end + spacecounter;
             
-            System.out.println("Start: " + start + " End: " + end + " Row: " + row + " Token: " + lastAcceptedString + " spacecounter: " + spacecounter);
+            //System.out.println("Start: " + start + " End: " + end + " Row: " + row + " Token: " + lastAcceptedString + " spacecounter: " + spacecounter);
             spacecounter = 0;
             return new Token(tokenId, lastAcceptedString, start, end, row);
             //return new Token(tokenId, lastAcceptedString);

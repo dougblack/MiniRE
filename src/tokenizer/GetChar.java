@@ -1,4 +1,4 @@
-package tokenizer;
+//package tokenizer;
 // GetChar: fetch next char 
 import java.io.*;
 import java.nio.charset.Charset;

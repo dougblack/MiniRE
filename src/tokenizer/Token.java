@@ -1,4 +1,4 @@
-package tokenizer;
+//package tokenizer;
 /**
  * Tokens identified according to a given grammar and scanned from a program
  * file using a table walker
@@ -31,6 +31,7 @@ public class Token {
 		this.end = end;
 		this.row = row;
 	}
+
     /**
      * Returns this token's identifier
      * 
@@ -38,6 +39,15 @@ public class Token {
      */
 	public String getId() {
 		return id;
+	}
+    /**
+     * Sets this token's identifier
+     * 
+
+     * @param The new identifier for this token
+     */
+	public void setId(String ID) {
+		id=ID;
 	}
 	
     /**
@@ -47,6 +57,16 @@ public class Token {
      */
 	public String getString() {
 		return string;
+	}
+	
+    /**
+     * Sets the literal string this token represents
+     * 
+
+     * @param The new literal string this token will represent
+     */
+	public void setString(String str) {
+		string = str;
 	}
 
     /**
