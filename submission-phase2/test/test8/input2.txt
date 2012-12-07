@@ -1,0 +1,68 @@
+/**
+ * This is a javadoc comment that is not valid in MiniRE scripts.
+ * Another script will have to remove this from the file.
+ */
+begin
+print(find '([A-Za-z0-9_])*(A|a)utomata([A-Za-z0-9_])*' in input1.txt);
+
+/*
+ * Another comment that will prevent this script from executing.
+ *
+ * (Not that we're trying to execute this script);
+ */
+Automata = find 'Automata' in input1.txt;
+n_Automata = #Automata;
+print(maxfreqstring(Automata));
+print(n_Automata);
+
+automata = find 'automata' in input1.txt;
+n_automata = #automata;
+print(maxfreqstring(automata));
+print(n_automata);
+
+Graph = find 'Graph' in input1.txt;
+n_Graph = #Graph;
+print(maxfreqstring(Graph));
+print(n_Graph);
+
+graph = find 'graph' in input1.txt;
+n_graph = #graph;
+print(maxfreqstring(graph));
+print(n_graph);
+
+/* To remove this comment, just replace '/[*].*[*]/' with "" */
+// These are even easier; replace '//.*' with ""
+replace 'Automata' with "Graph" in input1.txt >! output1.txt;
+replace 'automata' with "graph" in output1.txt >! output2.txt;
+
+print(find '([A-Za-z0-9_])*(G|g)raph([A-Za-z0-9_])*' in output2.txt diff find '([A-Za-z0-9_])*Graph([A-Za-z0-9_])*' in input1.txt union find '([A-Za-z0-9_])*graph([A-Za-z0-9_])*' in input1.txt);
+
+Graph = find 'Graph' in output2.txt;
+n_Graph = #Graph;
+graph = find 'Graph' in output2.txt;
+n_graph = #graph; // another easy one - same as above
+
+new_Auto = find 'Automata' in output2.txt;
+n_Automata = #new_Auto;
+new_auto = find 'automata' in output2.txt;
+n_automata = #new_auto; /* Having text before really makes no difference here */
+
+print(maxfreqstring(Automata));
+/* Nor does having text after this really matter */ print(n_Automata);
+print(maxfreqstring(automata));
+print(n_automata);
+/*///* No problems here... */ // ...unless the //s are removed first
+print(maxfreqstring(Graph));
+print(n_Graph);
+/*/* This, on the other hand, would cause a problem (for the script that will be
+output) if the above regexes are used */*/
+print(maxfreqstring(graph));
+print(n_graph);
+end
+
+
+
+
+
+
+
