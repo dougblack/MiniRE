@@ -1,0 +1,4 @@
+begin
+11_a = find '[If_].*[_this.]' in input1.txt;
+print(11_a);
+end

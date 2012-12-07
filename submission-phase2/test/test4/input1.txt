@@ -1416,7 +1416,7 @@ As he spoke, there came the sound of rifle shots from the Leonie, followed by th
 
 Tom, who at the first alarm had sprung to double-bank the after oar, took a hurried glance astern, and saw that his own ship was indeed running down with squared yards towards the Leonie. Old Sam had evidently fired one of his carronades, to let Hayes know he was coming.
 
-If you are seeing this printed out there is a problem. The first statement in the script assigns a value to the reserved word 'in', and the second statement prints the variable 'in', so a parse error should prevent you from seeing this.
+If_you_are_seeing_this_printed_out_there_is_a_problem. The_first_statement_in_the_script_assigns_a_value_to_a variable_with_the_name_'11_a',_which_is_not_a_valid_variable name,_and_the_second_statement_prints_the_variable_'11_a',_so a_scanner_error_should_prevent_you_from_seeing_this.
 
 For the next five minutes no word was spoken, as the dark-skinned seamen panted and bent to their oars, and Hayes, his face now set hard and cruel-looking, kept his eyes on his ship, from which came the continuous crack of small arms.
 

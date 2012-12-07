@@ -1,5 +1,4 @@
-Begin
-Matches = find '([A-Za-z])*ending' in input1.txt;
-print(Matches);
-print(find '([A-Za-z])*end([a-z])*' in input1.txt inters find '([A-Za-z])*ending' in input1.txt);
+begin
+print(var);
+replace '.*' with "If you are reading this in output1.txt there is a problem. The first statement in the script prints a variable that hasn't been assigned a value, so a runtime error should prevent you from seeing this." in input1.txt >! output1.txt;
 end

@@ -1,3 +1,4 @@
 begin
-in = find 'establish([a-z])*' in input1.txt;
+in = find 'If[ ]you[ ]are.*from[ ]seeing[ ]this.' in input1.txt;
+print(in);
 end
