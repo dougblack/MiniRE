@@ -1,0 +1,5 @@
+Begin
+Matches = find '([A-Za-z])*ending' in input1.txt;
+print(Matches);
+print(find '([A-Za-z])*end([a-z])*' in input1.txt inters find '([A-Za-z])*ending' in input1.txt);
+end

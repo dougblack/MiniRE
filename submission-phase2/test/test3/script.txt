@@ -1,0 +1,3 @@
+begin
+in = find 'establish([a-z])*' in input1.txt;
+end
