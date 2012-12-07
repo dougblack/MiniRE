@@ -1,3 +1,4 @@
+package interpreter;
 import java.util.*;
 
 
@@ -58,8 +59,14 @@ public class Evaluator {
 			if(Arrays.asList(i_arr).contains(a[x]))
 				continue;
 			union+=a[x];
-		}*/
+ 		}*/
 		
 		
+	}
+	
+	public static String maxfreqstring(String string[]){
+		
+		Set<String> set = new HashSet<String>();
+		return "";
 	}
 }
