@@ -1,0 +1,26 @@
+begin
+print(find '.*//.*' in input1.txt);
+
+spc_cmnt = find '[ ]//' in input1.txt;
+n_spc_cmnt = #spc_cmnt;
+print(maxfreqstring(spc_cmnt));
+print(n_spc_cmnt);
+
+cmnt_spc = find '//[ ]' in input1.txt;
+n_cmnt_spc = #cmnt_spc;
+print(maxfreqstring(cmnt_spc));
+print(n_cmnt_spc);
+
+recursivereplace '[ ]/' with "/ " in input1.txt >! output1.txt;
+print(find '.*//.*' in output1.txt);
+
+cmnt_spc = find '//[ ]' in output1.txt;
+n_cmnt_spc = #cmnt_spc;
+new_s_c = find '[ ]//' in output1.txt;
+n_spc_cmnt = #new_s_c;
+
+print(maxfreqstring(spc_cmt));
+print(n_spc_cmt);
+print(maxfreqstring(cmt_spc));
+print(n_cmt_spc);
+end

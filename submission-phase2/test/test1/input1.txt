@@ -1,0 +1,1 @@
+If you are seeing this printed out there is a problem. The script starts with 'Begin' rather than 'begin', so a parse error should prevent you from seeing this.

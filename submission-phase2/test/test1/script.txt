@@ -1,0 +1,3 @@
+Begin
+print(find '.*' in input1.txt);
+end

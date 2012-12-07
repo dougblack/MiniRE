@@ -1,0 +1,111 @@
+﻿CS : Languages and Computation Homework I
+Due Date : September th, Thursday, pm
+
+
+
+Guidelines:
+
+You can program in C, C++ or Java. Do not use tools (like lex and yacc) or any built-in features such as regex class in Java -- such solutions will get no credit
+
+Code should be properly documented with meaningful variable and function names. Short elegant code is preferred.
+
+
+Provide instructions about how to compile and execute your files along with test inputs.
+
+
+Any re-use of code (from internet or any other source)  is prohibited and will constitute act of plagiarism as per Georgia Tech honor code.
+
+
+If you run into road-blocks or have any questions, seek help from the TAs  (please use the Forums to clarify the doubts– we check those round the clock and will respond expediently). 
+
+Description:
+
+We want to design a document processing system that can process a text file of the document. The scanner forms the key component of this system along with a query engine. You will design and implement a hand written scanner that will process input file and first extract the relevant information (tokens and strings) from the file. The extracted information will be stored in a data structure of your choice. The system will support different queries which will work as described below. Using this system, the user of the system can study different properties of the input document.
+
+
+
+Scanner:
+
+The system will repeatedly call the scanner (just like a parser calls the scanner); the scanner will go over the input file (the text file you are processing) and will generate the tokens and return them along with the respective strings. The system will store this information in its internal data structures which can then be queried by the query engine described below.
+
+
+
+The scanner will only return the following tokens:
+
+
+VAR : Begins with a lowercase (a-z) or uppercase letter (A-Z) and is followed by one or more of the same or by a digit or a hyphen (-) 
+
+INT : Starts with a digit followed by one or more of the same
+
+
+
+FLOAT: Starts with a digit followed by zero or more of followed by a dot (.) followed by zero or more of
+
+
+
+The scanner uses a longest match rule : it starts a token using the above description and continues the same until it finds something which is not a part of the token. It terminates the token at this point and returns it along with the underlying string. 
+
+Everything other than the above tokens are scanned and ignored by the scanner (such as whitespaces, tabs, etc)
+
+
+
+In addition to the above, scanner can be called on-demand by the system to answer the query (see below).
+
+
+
+Query Engine:
+
+
+The query engine will support the following queries:
+
+
+
+Find the most frequently found string in the document for the VAR token – example: the
+
+
+What are the top k (k to be input by the user) strings for VAR token in the processed document? Maximum value of  k can be
+
+
+Count the total number of  tokens of each class : VAR, INT or FLOAT
+
+
+Maximum and minimum values of  INT  found in the document
+
+Maximum and Minimum values  of  FLOAT found in the document.
+
+
+Print all the quotes found in the document : a quote begins with “ and ends with “
+
+
+The number of occurences of : VAR being immediately followed in the document by the INT or FLOAT token
+
+
+---------------------------
+
+If you are seeing this printed out there is a problem. The first statement in the script contains a cyclic recursive replace - 'a' -> 'aa', so a parse error should prevent you from seeing this.-------------------------------------------------------------------
+You will devise and test the system generating your own test inputs. You will also be given a very large text file to run your code on and you will show the output of your system on the same. 
+You will deliver full code  (source + make files etc) along with instructions on compiling and testing it.
+
+
+Submission Guidelines:
+You need to submit the following with your homework submission (via T-square):
+
+)  A report containing:
+ 
+     a) A brief description of how you have implemented
+ 
+     b) Any assumptions you have made.
+ 
+     c) Test Cases - test VAR-only file, INT-only file, FLOAT-only file, all file, empty file
+
+
+)  A tar ball containing:
+ 
+     a) Source code of all the files along with the makefile or equivalent compilation/execution instructions.
+ 
+     b) Test cases - input files tested on.
+
+      c) Output for the test cases used.
+
+      d) Some documentation of the organization of the code and its functionality with respect to different modules etc.
+ 

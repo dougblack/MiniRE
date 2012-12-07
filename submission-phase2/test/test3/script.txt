@@ -1,0 +1,4 @@
+begin
+in = find 'If[ ]you[ ]are.*from[ ]seeing[ ]this.' in input1.txt;
+print(in);
+end
