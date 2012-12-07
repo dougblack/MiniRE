@@ -28,6 +28,8 @@ public class TableWalker {
        as it was the last time a DFA accepted it */
     private String tokenString;
     private String lastAcceptedString;
+    private int index;  // index of the first character of the token being
+                         // generated
 
 	/**
 	 * Constructs a table walker to generate tokens from a given program file
@@ -47,6 +49,7 @@ public class TableWalker {
             System.out.println("IOException");
         }
         this.dfas = dfas;
+        index = -1;
         buffer = "";
 	}
 
@@ -59,6 +62,7 @@ public class TableWalker {
      *          was encountered or some error occurred
      */
     public Token nextToken() throws IOException {
+        Token token;
         noToken = true;
         finishedStepping = false;
         lastAcceptedString = tokenString = "";
@@ -73,7 +77,7 @@ public class TableWalker {
         }
 
         if (c == EOF) {
-            return new Token("%% EOF", "");
+            return new Token("%% EOF", "", index);
         }
 
         // step through each viable DFA until a longest match is left
@@ -94,17 +98,19 @@ public class TableWalker {
         if (noToken) {
             //System.out.println("no Token");
             if (c == EOF) {
-                return new Token("%% EOF", "");
+                return new Token("%% EOF", "", index);
             } else {
-                return new Token("%% ERROR", tokenString);
+                return new Token("%% ERROR", tokenString, index);
             }
         } else {
             //System.out.println("returning token " + tokenId + ": " +
             //    lastAcceptedString);
             // buffer any chars that were read but not returned
             buffer(lastAcceptedString, tokenString);
-            return new Token(tokenId, lastAcceptedString);
+            token = new Token(tokenId, lastAcceptedString, index);
+            index = gc.getIndex() - buffer.length();
         }
+        return token;
     }
 
     /**
@@ -180,8 +186,12 @@ public class TableWalker {
     private char advanceToToken() {
         char currentChar;
         
+        index = gc.getIndex();
+        
         while (((currentChar = gc.getNextChar()) != EOF)
-                && ((currentChar <= SPACE) || (currentChar >= DELETE)));
+                && ((currentChar <= SPACE) || (currentChar >= DELETE))) {
+            index++;
+        }
         return currentChar;
     }
 }

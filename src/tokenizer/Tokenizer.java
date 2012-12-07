@@ -53,7 +53,7 @@ public class Tokenizer {
             while ((token = tw.nextToken()).getId() != "%% EOF") {
                 if (token.getId().equals("%% ERROR")) {
                     error = true;
-                    System.out.println("Unknown token " + token.getString());
+                    System.out.println("Unknown token " + token.getString() + " at index " + token.getIndex());
                     break;
                 }
                 if (token.getId().equals("$ID"))
