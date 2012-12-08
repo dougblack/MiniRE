@@ -1,4 +1,8 @@
 package interpreter;
+import java.io.*;
+import java.nio.channels.*;
+import java.nio.charset.Charset;
+import java.nio.*;
 import java.util.*;
 import java.util.regex.*;
 
@@ -79,42 +83,45 @@ public class Evaluator {
 	
 	public static String find(String regex, String filename){
 		
-		String matches="";
-		Tokenizer d = new Tokenizer(filename, "/home/alazar/git/MiniRE/src/interpreter/test.txt");
-		d.generateTokens();
-        ArrayList<Token> tokens = d.getTokens();
-        //
-        for (int i = 0; i < tokens.size(); i++) {
-            System.out.println(tokens.get(i).getId() + ": " +
-                tokens.get(i).getString());
-            matches+=tokens.get(i);
-        }
-		return matches;
+		if(regex.toCharArray()[0] == '\''){ // this is a regexp
+			
+			String matches="";
+			regex = regex.substring(1,regex.length()-1);
+			Tokenizer d = new Tokenizer("id", regex, filename);
+			d.generateTokens();
+	        ArrayList<Token> tokens = d.getTokens();
+	        
+	        for (int i = 0; i < tokens.size(); i++) {
+	        	matches += tokens.get(i).getString()+" ";
+	        }
+			return matches;
+		}
+		return "";
 	}
 	
 	
-	public static String replace(String regex, String with, String filename1, String filename2){
+	public static String replace(String regex, String with, String filename1, String filename2) throws IOException{
 		
 		
 		String matched = "";
-		if(regex.toCharArray()[0] == '\''){ // this is a regexp
-			
-			regex = regex.substring(1,regex.length()-1);
-			regex.toCharArray()[0] = ' ';
-			regex.toCharArray()[regex.length()-1] = ' ';
-			regex = regex.trim();
-			
-			Pattern pattern = Pattern.compile(regex);
-			Matcher matcher = pattern.matcher(regex);
-			while(matcher.find()){
-				matched+=matcher.group(0);
-			}
-			if(matched.length()>0)
-				return regex.replace(matched, with);
-			return "";
+		String i_to_replace[] = find(regex, filename1).split(" ");
+		String in = "";
+		regex = regex.substring(1,regex.length()-1);
+		FileInputStream stream = new FileInputStream(new File(filename1));
+		  try {
+		    FileChannel fc = stream.getChannel();
+		    MappedByteBuffer mbb = fc.map(FileChannel.MapMode.READ_ONLY, 0, fc.size());
+		    in = Charset.defaultCharset().decode(mbb).toString();
+		  }
+		  finally {
+		    stream.close();
+		  }
+		  
+		for(int x=0; x<i_to_replace.length; x++){
+			in = in.replace(i_to_replace[x], with);
 		}
 		
-		return matched;
+		return in;
 	}
 	
 	public static String print(String string){
