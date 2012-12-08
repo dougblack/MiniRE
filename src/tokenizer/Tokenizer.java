@@ -1,4 +1,4 @@
-//package tokenizer;
+package tokenizer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.io.*;
@@ -14,7 +14,7 @@ public class Tokenizer {
 	
     public static void main(String[] args) {
         //Tokenizer d = new Tokenizer("token_spec.txt", "input2.txt");
-        Tokenizer d = new Tokenizer("ment", "([A-Za-z])*ment([A-Za-z])*", "input2.txt");
+        Tokenizer d = new Tokenizer("ment", "([A-Za-z])*ment([A-Za-z])*", "src/input2.txt");
         d.generateTokens();
         ArrayList<Token> tokens = d.getTokens();
 
@@ -71,7 +71,6 @@ public class Tokenizer {
         if (acceptsRegexAsFile) {
             generateTokens();
         } else {
-            boolean error = false;
             Token token;
             try {
                 while ((token = tw.nextToken()).getId() != "%% EOF") {
@@ -81,10 +80,6 @@ public class Tokenizer {
                 }
             } catch (IOException e) {
                 System.out.println("Error: IOException while processing tokens");
-                error = true;
-            }
-            if (!error) {
-                System.out.println("Finished processing tokens");
             }
         }
     }
@@ -98,14 +93,13 @@ public class Tokenizer {
         if (!acceptsRegexAsFile) {
             matchRegex();
         } else {
-            boolean error = false;
             Token token;
             try {
                 while ((token = tw.nextToken()).getId() != "%% EOF") {
                     if (token.getId().equals("%% ERROR")) {
-                        error = true;
                         System.out.println("Unknown token " + token.getString() +
-                            " at line " + token.getRow() + ", column " + token.getStart());
+                            " at line " + token.getRow() + ", column " +
+                            token.getStart() + " in file " + token.getFile());
                         break;
                     }
                     if (token.getId().equals("$ID")) {
@@ -116,10 +110,6 @@ public class Tokenizer {
                 
             } catch (IOException e) {
                 System.out.println("Error: IOException while processing tokens");
-                error = true;
-            }
-            if (!error) {
-                System.out.println("Finished processing tokens");
             }
         }
     }

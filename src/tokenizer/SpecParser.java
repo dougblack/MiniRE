@@ -1,4 +1,4 @@
-//package tokenizer;
+package tokenizer;
 import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.FileInputStream;
@@ -23,7 +23,7 @@ public class SpecParser {
 
 	public static void main(String args[]) {
 		SpecParser sp = new SpecParser();
-		sp.parseFile("token_spec.txt");
+		sp.parseFile("src/token_spec.txt");
 		for (Map.Entry<String, String> specEntry : sp.specDefinitions.entrySet()) {
 			System.out.println("Entry: " + specEntry.getKey() + ". Value: " + specEntry.getValue());
 		}

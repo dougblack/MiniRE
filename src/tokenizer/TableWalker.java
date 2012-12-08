@@ -1,4 +1,4 @@
-//package tokenizer;
+package tokenizer;
 import java.io.*;
 import java.util.HashMap;
 
@@ -20,13 +20,14 @@ public class TableWalker {
                                         // string has been generated
     private String buffer; // stores previously-read, untokenized characters
     private String tokenId; // identifier for the token being generated
+    private String file; // a file to scan for tokens
 
-    public int row;
-    public int start;
-    public int end;
-    public int temp;
+    private int row;
+    private int start;
+    private int end;
+    private int temp;
     
-    public int spacecounter;
+    private int spacecounter;
     /* tokenString is the longest string currently being accepted by a DFA, a
        potential string for the current token. If tokenString ends up not being
        accepted by the last DFA, the table walker attempts to return a token
@@ -58,6 +59,7 @@ public class TableWalker {
             System.out.println("IOException");
         }
         this.dfas = dfas;
+        file = programFile;
         buffer = "";
 	}
 
@@ -110,9 +112,9 @@ public class TableWalker {
             //System.out.println("no Token");
 
             if (c == EOF) {
-                return new Token("%% EOF", "", start, end, row);
+                return new Token("%% EOF", "", file, start, end, row);
             } else {
-                return new Token("%% ERROR", tokenString, start, end, row);
+                return new Token("%% ERROR", file, tokenString, start, end, row);
             }
         } else {
             //System.out.println("returning token " + tokenId + ": " +
@@ -125,8 +127,7 @@ public class TableWalker {
             
             //System.out.println("Start: " + start + " End: " + end + " Row: " + row + " Token: " + lastAcceptedString + " spacecounter: " + spacecounter);
             spacecounter = 0;
-            return new Token(tokenId, lastAcceptedString, start, end, row);
-            //return new Token(tokenId, lastAcceptedString);
+            return new Token(tokenId, lastAcceptedString, file, start, end, row);
         }
     }
 

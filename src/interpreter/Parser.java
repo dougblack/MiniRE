@@ -230,7 +230,7 @@ public class Parser {
         SyntaxTreeNode termNode = new SyntaxTreeNode("TERM");
         stack.push(termNode);
         expect("$FIND", "term: expected FIND");
-        expect("$REGEX", "term: expeccted REGEX");
+        expect("$REGEX", "term: expected REGEX");
         expect("$IN", "term: missing 'in'");
         termNode.addChild(file_name());
         stack.pop();
@@ -272,7 +272,9 @@ public class Parser {
 	public void error(String failedGrammar) {
         SyntaxTreeNode last = stack.pop();
         last = stack.pop();
-		System.out.println("error in " + failedGrammar);
+		System.out.println("error in " + failedGrammar + " at line " +
+            token.getRow() + ", column " + token.getStart() + " in file " +
+            token.getFile());
         System.out.println("current rule " + last.nodeType);
         System.out.println("current token: " + token.getId() + " - " + token.getString() );
 		System.exit(0);
