@@ -121,6 +121,10 @@ public class Evaluator {
 			in = in.replace(i_to_replace[x], with);
 		}
 		
+		FileWriter fstream = new FileWriter(filename2);
+		BufferedWriter out = new BufferedWriter(fstream);
+		out.write(in);
+		out.close();
 		return in;
 	}
 	
