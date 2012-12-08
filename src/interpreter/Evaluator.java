@@ -11,170 +11,40 @@ import tokenizer.Tokenizer;
 
 /**
  * 
- * carries out final string operations on matched tokens
+ * Currently performs find and replace operations on text files. Needs to be
+ * expanded to walk the AST tree
  *
  */
 public class Evaluator {
+	
+	/**
+     * Finds all strings in the given file that match the given regex, and
+     * returns them in a StringList
+     */
+    public static StringList find(String regex, String filename){
+		Tokenizer d = new Tokenizer("id", regex, filename);
+		d.generateTokens();
 
-	/**
-	 * evaluator for #
-	 * @param string
-	 * @return 
-	 */
-	public static String getStringLength(String string){
-		
-		return string.length()+"";
+		return StringList.toStringList(d.getTokens());
 	}
 	
 	/**
-	 * string to string list adaptor (space-separation=set)
-	 * @param a
-	 * @param b
-	 * @return 
-	 */
-	public static String inters(String a, String b){
-		
-		return inters(Arrays.asList(a.split(" ")), Arrays.asList(b.split(" ")));
-	}
-	
-	/**
-	 * string to string list adaptor for union
-	 * @param a
-	 * @param b
-	 * @return
-	 */
-	public static String union(String a, String b){
-		
-		return union(Arrays.asList(a.split(" ")), Arrays.asList(b.split(" ")));
-	}
-	
-	/**
-	 * evaluator intersection of string lists
-	 * @param list1
-	 * @param list2
-	 * @return
-	 */
-	public static String inters(List<String> list1, List<String> list2){
-		
-		String str="";
-		List<String> list = new ArrayList<String>();
+     * Replaces all strings in the given file1 that match the given regex with
+     * the replacement string and prints the final output to file2. Returns true
+     * if matches were found.
+     */
+    public static boolean replace(String regex, String replacement,
+        String file1, String file2) throws IOException{
 
-        for (String t : list1) {
-            if(list2.contains(t)) {
-                list.add(t);
-            }
-        }
+		String[] matches = find(regex, file1).strings();
 
-        for (int x=0; x<list.size(); x++)
-        	str+=list.get(x)+" ";
-        return str;
-        //return list.toString();
-        
-	}
-	
-	/**
-	 * evaluator for union of string lists
-	 * @param list1
-	 * @param list2
-	 * @return
-	 */
-	public static String union(List<String> list1, List<String> list2){
-		
-		  Set<String> set = new HashSet<String>();
-		  String str="";
-	        set.addAll(list1);
-	        set.addAll(list2);
-
-	        ArrayList<String> list = new ArrayList<String>(set);
-	        
-	        for (int x=0; x<list.size(); x++)
-	        	str+=list.get(x)+" ";
-	        return str;
-	        //return list.toString();
-	        
-	}
-	
-	/**
-	 * string to string list adaptor for frequency counting
-	 * @param string
-	 * @return
-	 */
-	public static String maxfreqstring(String string){
-		return maxfreqstring(string.split(" "));
-	}
-	
-	/**
-	 * evaluator for maximum frequency of a string in a list
-	 * @param string
-	 * @return
-	 */
-	public static String maxfreqstring(String string[]){
-		
-		String freqstring="";
-		int freq = 0;
-		HashMap<String,Integer> map = new HashMap<String,Integer>();
-		for (int x=0; x<string.length; x++)
-		{
-			if(map.containsKey(string[x])){
-				int this_freq = (map.get(string[x])).intValue()+1;
-				map.put(string[x], this_freq);
-				if(freq<this_freq && this_freq>1){
-					freq = this_freq;
-					freqstring = string[x];
-				}
-			}
-			else{
-				map.put(string[x], 1);
-			}
+		if (matches.length < 1) {
+			return false;
 		}
-		
-		return freqstring;
-	}
-	
-	
-	/**
-	 * evaluator for finding regexp in a file
-	 * @param regex
-	 * @param filename
-	 * @return
-	 */
-	public static String find(String regex, String filename){
-		
-		if(regex.toCharArray()[0] == '\''){ // this is a regexp
-			
-			String matches="";
-			regex = regex.substring(1,regex.length()-1);
-			Tokenizer d = new Tokenizer("id", regex, filename);
-			d.generateTokens();
-	        ArrayList<Token> tokens = d.getTokens();
-	        
-	        for (int i = 0; i < tokens.size(); i++) {
-	        	matches += tokens.get(i).getString()+" ";
-	        }
-			return matches;
-		}
-		return "";
-	}
-	
-	/**
-	 * evaluator for finding and replacing regexp matches in filename1 and writing to filename2
-	 * @param regex
-	 * @param with
-	 * @param filename1
-	 * @param filename2
-	 * @return
-	 * @throws IOException
-	 */
-	public static String replace(String regex, String with, String filename1, String filename2) throws IOException{
-		
-		String matched = "";
-		String i_to_replace[] = find(regex, filename1).split(" ");
-		if(i_to_replace.length==0)
-			return -1+"";
-		
+
 		String in = "";
 		regex = regex.substring(1,regex.length()-1);
-		FileInputStream stream = new FileInputStream(new File(filename1));
+		FileInputStream stream = new FileInputStream(new File(file1));
 		  try {
 		    FileChannel fc = stream.getChannel();
 		    MappedByteBuffer mbb = fc.map(FileChannel.MapMode.READ_ONLY, 0, fc.size());
@@ -184,65 +54,40 @@ public class Evaluator {
 		    stream.close();
 		  }
 		  
-		for(int x=0; x<i_to_replace.length; x++){
-			in = in.replace(i_to_replace[x], with);
+		for (int i=0; i < matches.length; i++){
+			in = in.replace(matches[i], replacement);
 		}
 		
-		FileWriter fstream = new FileWriter(filename2);
+		FileWriter fstream = new FileWriter(file2);
 		BufferedWriter out = new BufferedWriter(fstream);
 		out.write(in);
 		out.close();
-		return in;
-	}
-	
-	
-	/**
-	 * evaluator for recursive replacing of regexps in output files
-	 * @param regex
-	 * @param with
-	 * @param filename1
-	 * @param filename2
-	 * @return
-	 * @throws IOException
-	 */
-	public static String recursivereplace(String regex, String with, String filename1, String filename2) throws IOException{
-		
-		String rep_stat = replace(regex, with, filename1, filename2);
-		while(rep_stat.compareTo("-1")!=0){
-			rep_stat = replace(regex,with,filename2,filename2);
-		}
-		return "0";
+        return true;
 	}
 	
 	/**
-	 * evaluator for printing a string
-	 * @param string
-	 * @return
-	 */
-	public static String print(String string){
-		
-		System.out.println(string);
-		return string;
+     * Will recursively replace all strings in the given file1 that match the
+     * given regex with the replacement string and print the final output to
+     * file2.
+     */
+    public static void recursivereplace(String regex, String replacement,
+        String file1, String file2) throws IOException{
+        
+        NFA nfa = new NFA(regex);
+        String sub = replacement;
+        
+        while (sub.length() > 0) {
+            if (nfa.testString(nfa.thisNFA, sub)) {
+                // throw some kind of error - the recursion is infinite
+                System.out.println("Error: infinite loop inevitable at:\n" +
+                    "recursivereplace '" + regex + "' with \"" + replacement +
+                    "\" in " + file1 + " >! " + file2);
+                return;
+            }
+            sub = sub.substring(0, sub.length()-1);
+        }
+
+		// Now Recursively replace until no more changes can be made
+
 	}
-	
-	public static String minus(String a, String b){
-		
-		HashSet<String> diff_set = new HashSet<String>();
-		HashSet<String> comm_set = new HashSet<String>();
-		String intersection[] = inters(a, b).split(" "), a_i[] = a.split(" ");
-		String str="";
-		for(int x=0; x<intersection.length; x++){
-			comm_set.add(intersection[x]);
-		}
-		
-		for(int x=0; x<a_i.length; x++)
-			if(!comm_set.contains(a_i[x]))
-				diff_set.add(a_i[x]);
-		
-		for(int x=0; x<diff_set.size(); x++)
-			str += diff_set.toArray()[x]+" ";
-		return str;
-		//return diff_set.toString();
-	}
-	
 }
