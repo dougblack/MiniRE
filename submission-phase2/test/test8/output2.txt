@@ -1,7 +1,4 @@
-/**
- * This is a javadoc comment that is not valid in MiniRE scripts.
- * Another script will have to remove this from the file.
- */
+
 begin
 print(find '([A-Za-z0-9_])*(A|a)utomata([A-Za-z0-9_])*' in input1.txt);
 
@@ -12,7 +9,7 @@ print(find '([A-Za-z0-9_])*(A|a)utomata([A-Za-z0-9_])*' in input1.txt);
  */
 Automata = find 'Automata' in input1.txt;
 n_Automata = #Automata;
-print(maxfreqstring(Automata));/****/
+print(maxfreqstring(Automata));
 print(n_Automata);
 
 automata = find 'automata' in input1.txt;

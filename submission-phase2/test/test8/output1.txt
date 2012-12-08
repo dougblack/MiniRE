@@ -1,0 +1,1 @@
+input2.txt is a MiniRe script with several java comments of different styles - //, /*...*/, and /**...*...*/, etc. Since MiniRE does not accept these comments, let's remove them and make input2.txt a runnable script. Here are all the comments in the script:

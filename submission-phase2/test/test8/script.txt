@@ -1,53 +1,37 @@
 begin
-replace '' with "No errors yet" in input1.txt >! output1.txt;
-msg = find 'No[ ]errors[ ]yet' in output1.txt;
+replace '.*' with "input2.txt is a MiniRe script with several java comments of different styles - //, /*...*/, and /**...*...*/, etc. Since MiniRE does not accept these comments, let's remove them and make input2.txt a runnable script. Here are all the comments in the script:" in input1.txt >! output1.txt;
+
+intro = find '.*' in output1.txt;
+one = #intro;
+print(intro);
+msg = maxfreqstring(intro);
 print(msg);
+print(find '13' in output1.txt);
 
-print(find '([A-Za-z0-9_])*(A|a)utomata([A-Za-z0-9_])*' in input1.txt);
 
-javadoc = find 'Automata' in input1.txt;
-n_Automata = #Automata;
-print(maxfreqstring(Automata));
-print(n_Automata);
+javadoc = find '/[*]\*.*[*]/' in input2.txt;
+slashStar = find '/[*].*[*]/' in input2.txt diff find '/[*]\*.*[*]/' in input2.txt;
+slashes = find '//.*' in input2.txt;
+print(javadoc, slashStar, slashes);
 
-automata = find 'automata' in input1.txt;
-n_automata = #automata;
-print(maxfreqstring(automata));
-print(n_automata);
+javadoc = #javadoc;
+slashStar = #slashStar;
+slashes = #slashes;
+print(javadoc, slashStar, slashes);
 
-Graph = find 'Graph' in input1.txt;
-n_Graph = #Graph;
-print(maxfreqstring(Graph));
-print(n_Graph);
+replace '/[*]\*.*[*]/' with "" in input2.txt >! output2.txt;
+replace '/[*].*[*]/' with "" in output2.txt >! output3.txt;
+replace '//.*' with "" in output3.txt >! output4.txt;
 
-graph = find 'graph' in input1.txt;
-n_graph = #graph;
-print(maxfreqstring(graph));
-print(n_graph);
+javadoc = find '/[*]\*.*[*]/' in output4.txt;
+slashStar = find '/[*].*[*]/' in output4.txt diff find '/[*]\*.*[*]/' in output4.txt;
+slashes = find '//.*' in output4.txt;
+print(javadoc, slashStar, slashes);
 
-replace 'Automata' with "Graph" in input1.txt >! output1.txt;
-replace 'automata' with "graph" in output1.txt >! output2.txt;
-
-print(find '([A-Za-z0-9_])*(G|g)raph([A-Za-z0-9_])*' in output2.txt diff find '([A-Za-z0-9_])*Graph([A-Za-z0-9_])*' in input1.txt union find '([A-Za-z0-9_])*graph([A-Za-z0-9_])*' in input1.txt);
-
-Graph = find 'Graph' in output2.txt;
-n_Graph = #Graph;
-graph = find 'Graph' in output2.txt;
-n_graph = #graph;
-
-new_Auto = find 'Automata' in output2.txt;
-n_Automata = #new_Auto;
-new_auto = find 'automata' in output2.txt;
-n_automata = #new_auto;
-
-print(maxfreqstring(Automata));
-print(n_Automata);
-print(maxfreqstring(automata));
-print(n_automata);
-print(maxfreqstring(Graph));
-print(n_Graph);
-print(maxfreqstring(graph));
-print(n_graph);
+javadoc = #javadoc;
+slashStar = #slashStar;
+slashes = #slashes;
+print(javadoc, slashStar, slashes);
 end
 
 
