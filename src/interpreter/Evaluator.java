@@ -38,7 +38,7 @@ public class Evaluator {
 	}
 	
 	/**
-	 * string to string list adaptor
+	 * string to string list adaptor for union
 	 * @param a
 	 * @param b
 	 * @return
@@ -56,6 +56,7 @@ public class Evaluator {
 	 */
 	public static String inters(List<String> list1, List<String> list2){
 		
+		String str="";
 		List<String> list = new ArrayList<String>();
 
         for (String t : list1) {
@@ -64,7 +65,10 @@ public class Evaluator {
             }
         }
 
-        return list.toString();
+        for (int x=0; x<list.size(); x++)
+        	str+=list.get(x)+" ";
+        return str;
+        //return list.toString();
         
 	}
 	
@@ -77,17 +81,21 @@ public class Evaluator {
 	public static String union(List<String> list1, List<String> list2){
 		
 		  Set<String> set = new HashSet<String>();
-
+		  String str="";
 	        set.addAll(list1);
 	        set.addAll(list2);
 
 	        ArrayList<String> list = new ArrayList<String>(set);
-	        return list.toString();
+	        
+	        for (int x=0; x<list.size(); x++)
+	        	str+=list.get(x)+" ";
+	        return str;
+	        //return list.toString();
 	        
 	}
 	
 	/**
-	 * string to string list adaptor
+	 * string to string list adaptor for frequency counting
 	 * @param string
 	 * @return
 	 */
@@ -215,6 +223,26 @@ public class Evaluator {
 		
 		System.out.println(string);
 		return string;
+	}
+	
+	public static String minus(String a, String b){
+		
+		HashSet<String> diff_set = new HashSet<String>();
+		HashSet<String> comm_set = new HashSet<String>();
+		String intersection[] = inters(a, b).split(" "), a_i[] = a.split(" ");
+		String str="";
+		for(int x=0; x<intersection.length; x++){
+			comm_set.add(intersection[x]);
+		}
+		
+		for(int x=0; x<a_i.length; x++)
+			if(!comm_set.contains(a_i[x]))
+				diff_set.add(a_i[x]);
+		
+		for(int x=0; x<diff_set.size(); x++)
+			str += diff_set.toArray()[x]+" ";
+		return str;
+		//return diff_set.toString();
 	}
 	
 }
