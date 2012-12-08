@@ -9,7 +9,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.ArrayList;
 
-// TODO - FIX SPACES IN REGEX
+// TODO - FIX SPACES IN REGEX -- see below. I traced the space issue, and it
+// would be better to handle it in NFA.java
+// - Al
 
 public class SpecParser {
 
@@ -52,20 +54,28 @@ public class SpecParser {
         HashMap<String, String> replacements = new HashMap<String, String>();
 		specDefinitions = readFile(filename);
 		for (int i = 0; i < orderedDefs.size(); i++) {
-            String id = orderedDefs.get(i);
-			String definition = specDefinitions.get(id);
-			if (definition.equals("-")) {
-				definition = "\\-";
-				specDefinitions.put(id, definition);
-			}
+            String identifier = orderedDefs.get(i);
+			String definition = specDefinitions.get(identifier);
+
 			if (!definition.contains("$")) {
-				specDFAs.put(id, new DFA(new NFA(definition), 0));
-                replacements.put(id, definition);
+                // The definition does not contain any other token names;
+                // e.g., $FirstName = [A-Z]([a-z])*
+                if (definition.equals("-")) {
+                    // Escape the '-'
+				    definition = "\\-";
+				    specDefinitions.put(identifier, definition);
+			    }
+				specDFAs.put(identifier, new DFA(new NFA(definition), 0));
+                replacements.put(identifier, definition);
 			} else {
+                // The definition contains other token names;
+                // e.g., $Number = ($DIGIT)*
                 for (String defined : replacements.keySet()) {
+                    // Replace the token names in the definition;
+                    // e.g., if $DIGIT = ([0-9])*, $Number becomes (([0-9]))*
                     definition = definition.replace(defined, replacements.get(defined));
                 }
-                String entry = id;
+                String entry = identifier;
 			    String target = "";
 			    String excludeRule = "";
 			    if (definition.contains(" IN ")) {
@@ -85,13 +95,17 @@ public class SpecParser {
 							    int excludeDashIndex = excludeRule.indexOf("-");
 							    char excludeStart = excludeRule.charAt(excludeDashIndex - 1);
 							    char excludeEnd = excludeRule.charAt(excludeDashIndex + 1);
+
 							    if (rangeIsInRange(excludeStart, excludeEnd, rangeStart, rangeEnd)) {
+                                    // The syntax is correct; the excluded range of characters is a subset of the second range;
+                                    // e.g., [^C-E] in [A-Z] - every character from C to E is within the range [A-Z]
+                                    // Convert a definition like the above to [A-BF-Z]
 								    String replaceString = excludeRange(excludeStart, excludeEnd, rangeStart, rangeEnd);
+
 								    definition = tokenDefinition.replace(rangeStart + "-" + rangeEnd,
 										    replaceString);
 								    specDefinitions.put(entry, definition);
 								    specDFAs.put(entry, new DFA(new NFA(definition), 1));
-
 							    }
 						    } else {
 							    char excludeChar = excludeRule.charAt(excludeRule.indexOf("^") + 1);
@@ -103,19 +117,21 @@ public class SpecParser {
 								    specDFAs.put(entry, new DFA(new NFA(definition), 1));
 							    }
 						    }
-
 						    dashIndex = tokenDefinition.indexOf("-", dashIndex + 1);
 					    }
 				    }
-			    }
-                //System.out.println(id + "  " + definition);
-                replacements.put(id, definition);
-			    specDFAs.put(id, new DFA(new NFA(definition), 1));
-				specDefinitions.put(id, definition);
-            }
+			    } // end if, where the definition initially looked similar to [^BC] IN [A-Z]
+                //System.out.println(identifier + "  " + definition);
+                replacements.put(identifier, definition);
+                // TODO: The space problem in ranges is passed on to NFA.java below,
+                // as a definition like [A-Z a-z] will make it to this point in the code
+			    specDFAs.put(identifier, new DFA(new NFA(definition), 1));
+				specDefinitions.put(identifier, definition);
+            } // end else, where all tokens initially had definitions containing other tokens
 		}
-        for (String characterId : characterClasses) {
-            specDFAs.remove(characterId);
+        // Remove any character classes from the list of Tokens
+        for (String characterClass : characterClasses) {
+            specDFAs.remove(characterClass);
         }
 		return specDFAs;
 	}
