@@ -40,6 +40,7 @@ public class Test {
 		
 		System.out.println(Evaluator.find("'([A-Za-z])*ment([A-Za-z])*'", "/home/alazar/git/MiniRE/src/input2.txt"));
         System.out.println(Evaluator.replace("'brown'","red", "/home/alazar/git/MiniRE/src/interpreter/test.txt", "/home/alazar/git/MiniRE/src/interpreter/output2.txt"));
+        System.out.println(Evaluator.minus("The quick brown fox", "The quick yellow dogs"));
 
 	}
 }
