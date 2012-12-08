@@ -17,13 +17,13 @@ public class NFA {
 
 	public static void main(String args[]) {
 
-		NFA nfa1 = new NFA("(a|b)*\\.(b|c)*");
-		nfa1.testNFA("abababaaaabbb", "abbbabbkjkababaaa", "aba.bc");
+		/*NFA nfa1 = new NFA("(a|b)*\\.(b|c)*");
+		nfa1.testNFA("abababaaaabbb", "abbbabbkjkababaaa", "aba.bc");*/
 
 		NFA nfa2 = new NFA(".");
-		nfa2.testNFA("a", "bca", "", "c");
+		nfa2.testNFA("a", "", " ", ".");
 
-		NFA nfa3 = new NFA("(ab)*");
+		/*NFA nfa3 = new NFA("(ab)*");
 		nfa3.testNFA("a", "", "ababa", "ababab");
 
 		NFA nfa4 = new NFA("(dougblack)+");
@@ -33,14 +33,56 @@ public class NFA {
 		nfa5.testNFA("0", "1", "58989");
 
 		NFA nfa6 = new NFA("[^a]*");
-		nfa6.testNFA("a", "b", "bb", "ba");
+		nfa6.testNFA("a", "b", "bb", "ba", " ", "");
 
 		NFA nfa7 = new NFA("[a-z](b|c)");
 		nfa7.testNFA("A", "a", "ab", "abbc");
 
 		NFA nfa8 = new NFA("[^a-z]*");
-		nfa8.testNFA("0192831092830");
-	}
+		nfa8.testNFA("0192831092830", "", " ", "a", "5");*/
+
+        // Escaped space
+		NFA nfa9 = new NFA("\\ ");
+		nfa9.testNFA(" ", "  ", "", " .");
+
+        // Literal space
+		NFA nfa14 = new NFA("[ ]");
+		nfa14.testNFA("", "a", "5", " ", " b", "a ", "[ ]");
+
+        // Escaped parentheses, exactly once
+		NFA nfa10 = new NFA("\\(\\)");
+		nfa10.testNFA("(", ")", "())", "(()", "(())", "()()", "()");
+
+        // Escaped parentheses in parentheses, exactly once
+		NFA nfa11 = new NFA("(\\(\\))");
+		nfa11.testNFA("(", ")", "())", "(()", "(())", "()()", "()");
+
+        // Escaped parentheses in parentheses, at least once
+		NFA nfa12 = new NFA("(\\(\\))+");
+		nfa12.testNFA("(", ")", "())", "(()", "(())", "()()", "()");
+
+        // Literal parentheses (being inside brackets makes them literal)
+		NFA nfa13 = new NFA("[()]");
+		nfa13.testNFA("(", ")", "())", "(()", "(())", "()()", "()");
+
+        // Non-literal parentheses in non-literal parentheses
+        // WARNING: INFINITE LOOP
+		//NFA nfa17 = new NFA("(())");
+		//nfa17.testNFA("(", ")", "())", "(()", "(())", "()()", "()");
+
+        // Literal *, +, |, and ? (being inside brackets makes it literal)
+		NFA nfa16 = new NFA("[*+|?]");
+		nfa16.testNFA("*", "+", "|", "?", "", "[", "]", " ");
+
+        // Straight from REGEX.doc:
+        // [^\\\^\-\]\[] represents all characters but \, ^, -, [ and ]
+		NFA nfa15 = new NFA("[^\\\\\\^\\-\\]\\[]");
+		nfa15.testNFA("", "a", "4", "X", " ", "\\", "^", "-", "[", "]");
+
+        // Space in brackets between ranges
+		NFA nfa18 = new NFA("[A-Z a-z]");
+		nfa18.testNFA("", "a", "4", "X", " ");
+    }
 
 	public NFA(String regex) {
 		nodes = new HashSet<Node>();
