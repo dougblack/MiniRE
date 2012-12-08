@@ -1,4 +1,6 @@
 package interpreter;
+import tokenizer.Token;
+
 import java.util.ArrayList;
 import java.util.TreeSet;
 import java.util.HashMap;

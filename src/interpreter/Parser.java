@@ -55,16 +55,22 @@ public class Parser {
 
         SyntaxTreeNode statementListTailNode = new SyntaxTreeNode("STATEMENT-LIST-TAIL");
         stack.push(statementListTailNode);
-        if(peek("NULL"))
-            return null;
 
-		statementListTailNode.addChild(statement());
-        if (peek("$REPLACE") || peek("$RECREP") || peek("$PRINT")
-                || peek("$ID"))
+        if (!(peek("$REPLACE") || peek("$RECREP") || peek("$PRINT")
+                || peek("$ID"))) {
+            statementListTailNode.addChild(epsilon());
+        } else {
+            statementListTailNode.addChild(statement());
             statementListTailNode.addChild(statement_list_tail());
+        }
         stack.pop();
         return statementListTailNode;
 	}
+
+    public SyntaxTreeNode epsilon() {
+        return new SyntaxTreeNode("EPSILON");
+
+    }
 
     /*
      * Kinda done.
@@ -168,10 +174,8 @@ public class Parser {
     public SyntaxTreeNode exp_list() {
         SyntaxTreeNode expListNode = new SyntaxTreeNode("EXP-LIST");
         stack.push(expListNode);
-        if (!accept("$NULL")) {
-            expListNode.addChild(exp());
-            expListNode.addChild(exp_list_tail());
-        }
+        expListNode.addChild(exp());
+        expListNode.addChild(exp_list_tail());
         stack.pop();
         return expListNode;
     }
@@ -184,6 +188,8 @@ public class Parser {
         if (accept("$COMMA")) {
             expListTailNode.addChild(exp());
             expListTailNode.addChild(exp_list_tail());
+        } else {
+            expListTailNode.addChild(epsilon());
         }
         stack.pop();
         return expListTailNode;

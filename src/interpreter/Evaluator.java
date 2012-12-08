@@ -6,6 +6,7 @@ import java.nio.*;
 import java.util.*;
 import java.util.regex.*;
 
+import tokenizer.NFA;
 import tokenizer.Token;
 import tokenizer.Tokenizer;
 
