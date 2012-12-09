@@ -2,3 +2,4 @@ begin
 print(var);
 replace '.*' with "If_you_are_reading_this_in_output1.txt_there_is_a_problem._The_first_statement_in_the_script_prints_a_variable_that_hasn't_been_assigned_a_value,_so_a_runtime_error_should_prevent_you_from_seeing_this." in "input1.txt" >! "output1.txt";
 end
+

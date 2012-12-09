@@ -102,14 +102,14 @@ public class StringList {
     }
 
     /**
-     * Returns a string in a that has a maximal # of
+     * Returns a StringList containing a string from a that has a maximal # of
      * locations associated with it
      *
      * @param a A StringList
-     * @return a string in a that has a maximal # of
+     * @return a StringList containing a string from a that has a maximal # of
      *          locations associated with it
      */
-    public static String maxfreqstring(StringList a) {
+    public static StringList maxfreqstring(StringList a) {
         return a.maxfreqstring();
     }
 
