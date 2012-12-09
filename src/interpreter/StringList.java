@@ -102,19 +102,6 @@ public class StringList {
     }
 
     /**
-     * Returns a StringList containing a string from a that has a maximal # of
-     * locations associated with it
-     *
-     * @param a A StringList
-     * @return a StringList containing a string from a that has a maximal # of
-     *          locations associated with it
-     */
-    public static StringList maxfreqstring(StringList a) {
-        return a.maxfreqstring();
-    }
-
-
-    /**
      * Maps tokens to files to the locations of the tokens in the files.
      */
     private HashMap<String, HashMap<String, TreeSet<Long>>> list;
