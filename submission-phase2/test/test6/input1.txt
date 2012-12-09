@@ -1,5 +1,5 @@
 package_tokenizer;
-//_GetChar:_fetch_next_char_
+_//_GetChar:_fetch_next_char_
 import_java.io.*;
 import_java.nio.charset.Charset;
 public_class_GetChar_{_

@@ -11,8 +11,7 @@ import java.util.*;
 
 /**
  * 
- * Currently performs find and replace operations on text files. Needs to be
- * expanded to walk the AST tree
+ * Evaluates an AST Tree
  *
  */
 public class Evaluator {
@@ -84,7 +83,7 @@ public class Evaluator {
                 return eval(children.get(0));
             } else if (children.get(0).id.equals("$HASH")) {
                 return ((StringList) eval(children.get(1))).length();
-            } else if (children.get(0).id.equals("$MAXFREQSTRING")) {
+            } else if (children.get(0).id.equals("$MAXFREQ")) {
                 return ((StringList) symbolTable.get(children.get(2).value)).maxfreqstring();
             }
         } else if (nodeType.equals("FILE-NAMES")) {
@@ -158,14 +157,14 @@ public class Evaluator {
     }
 
     /**
-     * Returns a string in list that occurs a maximal number of times, taking
-     * into account all strings and all files they appear in
+     * Returns a string that occurs a maximal number of times in list, in a
+     * StringList, taking into account all strings and all files they appear in.
      *
      * @param a A StringList
-     * @return a string that has a maximal # of locations associated with it
+     * @return a string that has a maximal # of locations associated with it, in
+     *          a StringList
      */
-    public static String maxFreqString(StringList list) {
-        //String mostFrequentString = "";
+    public static StringList maxFreqString(StringList list) {
         return list.maxfreqstring();
     }
 

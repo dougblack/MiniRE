@@ -1,1 +1,26 @@
-Argument argumentative predicament mentoring apple
+package_tokenizer;
+_//_GetChar:_fetch_next_char_
+import_java.io.*;
+import_java.nio.charset.Charset;
+public_class_GetChar_{_
+___private_Reader_in;_//_internal_file_name_for_input_stream
+___private_BufferedReader_reader;_//_char_reader
+____
+___public_GetChar_(String_filename)_throws_FileNotFoundException,_IOException_{_
+	___File_file_=_new_File(filename);
+	___reader=new_BufferedReader(
+	___new_InputStreamReader(
+		________new_FileInputStream(file),
+		________Charset.forName("UTF-8")));
+___}
+
+___public_char_getNextChar()_{
+______char_ch=(char)-1;//'_';_//_=_'_'_to_keep_compiler_happy
+______try_{
+_________ch_=_(char)reader.read();__
+______}_catch_(IOException_e)_{
+_________System.out.println("char_exception");_//_log_exception
+______}
+______return_ch;
+___}
+}

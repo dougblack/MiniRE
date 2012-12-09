@@ -1,31 +1,25 @@
 begin
-print(find '.*//.*' in "input1.txt");
 
-spc_cmnt = find '_//' in "input1.txt";
-n_spc_cmnt = #spc_cmnt;
-maxSpcCmnt = maxfreqstring(spc_cmnt);
-print(((maxSpcCmnt)));
-print((n_spc_cmnt));
+under = find '.*_.*' in "input1.txt";
+print(under);
+nUnder = #under;
+mUnder = maxfreqstring(under);
+print((nUnder));
 
-cmnt_spc = find '//_' in "input1.txt";
-n_cmnt_spc = #cmnt_spc;
-maxCmntSpc = maxfreqstring(cmnt_spc);
-print(maxCmntSpc);
-print(n_cmnt_spc);
+dash = find '.*_.*' in "input1.txt";
+nDash = #dash;
+mDash = maxfreqstring(dash);
+print(nDash);
 
-recursivereplace '_/' with "/_" in "input1.txt" >! "output1.txt";
-print(find '.*//.*' in "output1.txt");
+recursivereplace '_' with "-" in "input1.txt" >! "output1.txt";
 
-cmnt_spc = find '//_' in "output1.txt";
-n_cmnt_spc = #cmnt_spc;
-new_s_c = find '_//' in "output1.txt";
-n_spc_cmnt = #new_s_c;
+under2 = find '.*_.*' in "output1.txt";
+nUnder2 = #under2;
+mUnder2 = maxfreqstring(under2);
 
+dash2 = find '.*-.*' in "output1.txt";
+nDash2 = #dash2;
+mDash2 = maxfreqstring(dash2);
 
-maxSpcCmnt = maxfreqstring(spc_cmnt);
-print(maxSpcCmnt);
-print(n_spc_cmnt);
-maxCmntSpc = maxfreqstring(cmnt_spc);
-print(maxCmntSpc);
-print(n_cmnt_spc);
+print(mUnder2, nUnder2, mDash2, nDash2);
 end
