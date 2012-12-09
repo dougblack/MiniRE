@@ -56,7 +56,6 @@ public class TableWalker {
         } catch (FileNotFoundException e) {
             // Signal an error somehow
             System.out.println("File " + programFile + " not found");
-            e.printStackTrace();
         } catch (IOException e) {
             // Signal an error somehow
             System.out.println("IOException");
@@ -118,7 +117,7 @@ public class TableWalker {
             if (c == EOF) {
                 return new Token("%% EOF", "", file, start, end, row);
             } else {
-                return new Token("%% ERROR", file, tokenString, start, end, row);
+                return new Token("%% ERROR", tokenString, file, start, end, row);
             }
         } else {
             //System.out.println("returning token " + tokenId + ": " +
@@ -206,7 +205,7 @@ public class TableWalker {
      * @return The character found, or (char) -1 if EOF was reached
      */
     private char advanceToToken() {
-        char currentChar;
+        char currentChar = (char) -1;
         
         while (((currentChar = gc.getNextChar()) != EOF) && ((currentChar <= SPACE) || (currentChar >= DELETE))) {
             //System.out.println(currentChar);

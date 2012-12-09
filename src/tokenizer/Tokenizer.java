@@ -14,7 +14,7 @@ public class Tokenizer {
 	
     public static void main(String[] args) {
         //Tokenizer d = new Tokenizer("token_spec.txt", "input2.txt");
-        Tokenizer d = new Tokenizer("ment", "([A-Za-z])*ment([A-Za-z])*", "src/input2.txt");
+        Tokenizer d = new Tokenizer("ment", "([A-Za-z])*ment([A-Za-z])*", "input2.txt");
         d.generateTokens();
         ArrayList<Token> tokens = d.getTokens();
 
@@ -65,12 +65,11 @@ public class Tokenizer {
 
     /**
      * Repeatedly calls the table walker for the next token in the program file.
-     * All tokens will match the input 
+     * Stores each token until the end of the file is reached or an unknown
+     * token is encountered.
      */
-    public void matchRegex() {
-        if (acceptsRegexAsFile) {
-            generateTokens();
-        } else {
+    public void generateTokens() {
+        if (!acceptsRegexAsFile) {
             Token token;
             try {
                 while ((token = tw.nextToken()).getId() != "%% EOF") {
@@ -81,17 +80,6 @@ public class Tokenizer {
             } catch (IOException e) {
                 System.out.println("Error: IOException while processing tokens");
             }
-        }
-    }
-
-    /**
-     * Repeatedly calls the table walker for the next token in the program file.
-     * Stores each token until the end of the file is reached or an unknown
-     * token is encountered.
-     */
-    public void generateTokens() {
-        if (!acceptsRegexAsFile) {
-            matchRegex();
         } else {
             Token token;
             try {

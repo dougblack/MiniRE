@@ -52,11 +52,21 @@ public class Evaluator {
                 String regex = children.get(1).value;
                 String asciiStr = children.get(3).value;
                 ArrayList<String> fileNames = (ArrayList<String>) eval(children.get(5));
+                
+                // Remove the single quotes from regex and double from asciiStr
+                regex = regex.substring(1,regex.length()-1);
+                asciiStr = asciiStr.substring(1,asciiStr.length()-1);
+
                 return replace(regex, asciiStr, fileNames.get(0), fileNames.get(1));
             } else if (children.get(0).id.equals("$RECREP")) {
                 String regex = children.get(1).value;
                 String asciiStr = children.get(3).value;
                 ArrayList<String> fileNames = (ArrayList<String>) eval(children.get(5));
+                
+                // Remove the single quotes from regex and double from asciiStr
+                regex = regex.substring(1,regex.length()-1);
+                asciiStr = asciiStr.substring(1,asciiStr.length()-1);
+
                 recursivereplace(regex, asciiStr, fileNames.get(0), fileNames.get(1));
             } else if (children.get(0).id.equals("$ID")) {
                 String idName = children.get(0).value;
@@ -66,10 +76,9 @@ public class Evaluator {
                 SyntaxTreeNode exp_list = children.get(2);
                 try {
                     StringList exp = (StringList) eval(exp_list.children.get(0));
-                    if (exp.length() > 0)
+                    if (exp != null) {
                         System.out.println(exp.toString());
-                    else
-                        System.out.println("[]");
+                    }
                 } catch (ClassCastException cce) {
                     Integer exp  = (Integer) eval(exp_list.children.get(0));
                     System.out.println(exp);
@@ -78,10 +87,9 @@ public class Evaluator {
                 while (exp_list_tail.children.get(0).nodeType == null) {
                     try {
                         StringList exp = (StringList) eval(exp_list_tail.children.get(1));
-                        if (exp.length() > 0)
+                        if (exp != null) {
                             System.out.println(exp.toString());
-                        else
-                            System.out.println("[]");
+                        }
                     } catch (ClassCastException cce) {
                         Integer exp  = (Integer) eval(exp_list_tail.children.get(1));
                         System.out.println(exp);
@@ -103,9 +111,17 @@ public class Evaluator {
             fileNames.add((String) eval(children.get(2)));
             return fileNames;
         } else if (nodeType.equals("SOURCE-FILE")) {
-            return children.get(0).value;
+            String filename = (String) children.get(0).value;
+
+            // Remove "" surrounding filename
+            filename = filename.substring(1, filename.length()-1);
+            return filename;
         } else if (nodeType.equals("DESTINATION-FILE")) {
-            return children.get(0).value;
+            String filename = (String) children.get(0).value;
+
+            // Remove "" surrounding filename
+            filename = filename.substring(1, filename.length()-1);
+            return filename;
         } else if (nodeType.equals("EXP-LIST-TAIL")) {
             if (children.get(0).nodeType.equals("EPSILON")) {
                 return null;
@@ -143,16 +159,28 @@ public class Evaluator {
         } else if (nodeType.equals("TERM")) {
             String fileName = (String) eval(children.get(3));
             String regex = (String) eval(children.get(1));
+            
+            // Remove the single quotes from regex
+            regex = regex.substring(1,regex.length()-1);
+
             return find(regex, fileName);
         } else if (nodeType.equals("FILE-NAME")) {
-            return (String) children.get(0).value;
-        } else {
-            System.out.println("Finished evaluation.");
+            String filename = (String) children.get(0).value;
+
+            // Remove "" surrounding filename
+            filename = filename.substring(1, filename.length()-1);
+            return filename;
         }
         return null;
     }
 
-    // TODO
+    /**
+     * Returns a string in list that occurs a maximal number of times, taking
+     * into account all strings and all files they appear in
+     *
+     * @param a A StringList
+     * @return a string that has a maximal # of locations associated with it
+     */
     public static String maxFreqString(StringList list) {
         //String mostFrequentString = "";
         return list.maxfreqstring();
@@ -170,9 +198,6 @@ public class Evaluator {
      *          metadata
      */
     public static StringList find(String regex, String filename){
-        filename = filename.replaceAll("\"", "");
-        regex = regex.replaceAll("'", "");
-        System.out.println(filename);
 		Tokenizer d = new Tokenizer("id", regex, filename);
 		d.generateTokens();
 
@@ -195,9 +220,6 @@ public class Evaluator {
      */
     public static boolean replace(String regex, String replacement,
         String file1, String file2) {
-        regex = regex.replaceAll("'", "");
-        file1 = file1.replace("\"", "");
-        file2 = file2.replace("\"", "");
 
 		String fileText = "";
 
@@ -326,7 +348,6 @@ public class Evaluator {
             fileText = Charset.defaultCharset().decode(mbb).toString();
         } catch (FileNotFoundException e) {
             System.out.println("File " + src + " not found");
-            e.printStackTrace();
         } catch (IOException e) {
             System.out.println("Unexpected IOException");
             e.printStackTrace();
