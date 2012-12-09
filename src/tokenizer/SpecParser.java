@@ -137,6 +137,7 @@ public class SpecParser {
         for (String characterClass : characterClasses) {
             specDFAs.remove(characterClass);
         }
+
 		return specDFAs;
 	}
 
@@ -158,12 +159,12 @@ public class SpecParser {
 				String[] splitString = strLine.split(" ", 2);
 				if (!inTokens && splitString.length > 1 && !splitString[0].contains("%%")) {
                     characterClasses.add(splitString[0]);
-					specDefinitions.put(splitString[0], splitString[1]);
+					specDefinitions.put(splitString[0], splitString[1].trim());
                     orderedDefs.add(splitString[0]);
 				} else if (strLine.contains("%% TOKENS")) {
                     inTokens = true;
                 } else if (inTokens) {
-                    specDefinitions.put(splitString[0], splitString[1]);
+                    specDefinitions.put(splitString[0], splitString[1].trim());
                     orderedDefs.add(splitString[0]);
                 }
 			}

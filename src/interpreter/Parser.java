@@ -329,7 +329,6 @@ public class Parser {
         if (token.equals(id)) {
             tkzr.consumeToken();
             SyntaxTreeNode newNode = new SyntaxTreeNode(token);
-            System.out.println("Accepted " + token);
             stack.peek().addChild(newNode);
             try {
                 token = tkzr.peekToken();

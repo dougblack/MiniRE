@@ -82,6 +82,12 @@ public class NFA {
         // Space in brackets between ranges
 		NFA nfa18 = new NFA("[A-Z a-z]");
 		nfa18.testNFA("", "a", "4", "X", " ");
+
+        NFA nfa19 = new NFA("[A-Z|a-z|]");
+        nfa19.testNFA("", "a", "4", "X", " ");
+
+        NFA nfa20 = new NFA("=");
+        nfa20.testNFA(" ", "=");
     }
 
 	public NFA(String regex) {
@@ -123,6 +129,10 @@ public class NFA {
 	public static String preprocessCharacterClasses(String regex) {
 
 		boolean parenthesis = false;
+        boolean lastOrIsNull = false;
+        if (regex.length() > 2) {
+            lastOrIsNull = regex.substring(regex.length()-2, regex.length()).equals("|]");
+        }
 		for (int i = 0; i < regex.length(); i++) {
 			if (regex.charAt(i) == '[') {
 				int j = indexOfClosing(regex, i + 1, regex.length(), '[');
@@ -132,15 +142,20 @@ public class NFA {
 					char bracketTargetChar = 'a';
 					if (x + 3 <= j)
 						bracketTargetChar = regex.charAt(x + 3);
-					if (nextChar == '-' && bracketTargetChar == ']') {
-						// System.out.println("Last range hit.");
+                    if (currentChar == '\\') {
+                        if ((x + 1) < j && (regex.charAt(x+1) != '\\')) {
+                            regex = new StringBuffer(regex).insert(x+2, '|').toString();
+                            j++;
+                            x++;
+                        }
+                        x++;
+					}  else if (nextChar == '-' && bracketTargetChar == ']') {
 						if (parenthesis) {
 							regex = new StringBuffer(regex).insert(x + 3, ')').toString();
 							j++;
 						}
 						break;
 					} else if (nextChar == '-') {
-						// System.out.println("Range.");
 						if (bracketTargetChar != '|')
 							regex = new StringBuffer(regex).insert(x + 3, '|').toString();
 						else
@@ -148,24 +163,22 @@ public class NFA {
 						x = x + 3;
 						j++;
 					} else if (nextChar == ']') {
-						// System.out.println("Hit end.");
 						break;
 					} else if (currentChar == '-') {
-						// System.out.println("Hit dash. Bad.");
 						x++;
 					} else if (currentChar == '^') {
-						// System.out.println("Hit caret. Build parenthesis!");
 						if ((x + 2) < j && (regex.charAt(x + 2) == '-')) {
 							regex = new StringBuffer(regex).insert(x + 1, '(').toString();
 							parenthesis = true;
 							x++;
 							j++;
 							continue;
-						}
-					} else if (currentChar == '|') {
-						// System.out.println("Hit pipe or caret. Bad.");
+						} else if ((x + 1) < j && (regex.charAt(x + 1) == '\\')) {
+                            regex = new StringBuffer(regex).insert(x + 3, '|').toString();
+                            x+=3;
+                            j++;
+                        }
 					} else {
-						// System.out.println("Regular character.");
 						regex = new StringBuffer(regex).insert(x + 1, '|').toString();
 						x = x + 1;
 						j++;
@@ -181,8 +194,11 @@ public class NFA {
 				}
 				i = j;
 			}
-		}
-		return regex;
+        }
+        if (regex.length() > 2 && regex.substring(regex.length()-2, regex.length()).equals("|]") && !lastOrIsNull) {
+            regex = regex.substring(0, regex.length()-2) + "]";
+        }
+        return regex;
 	}
 
 	/**
@@ -208,15 +224,8 @@ public class NFA {
 
 			char currentChar = regex.charAt(i);
 
-			if (currentChar == '\\' && !escaped) { // Escape character. Set
-													// escaped flag for next
-													// character. escaped =
-													// true;
-			// System.out.println("Escape encountered.");
+			if (currentChar == '\\' && !escaped) { // Escape character. Set escaped flag for next character.
 				escaped = true;
-				continue;
-			}
-			if (currentChar == ' ') {
 				continue;
 			}
 			if (escaped) { // Character is escaped. So add a CharacterPath
@@ -224,7 +233,6 @@ public class NFA {
 			// System.out.println("Adding escaped character: " + currentChar);
 				Automata next = new Automata();
 				next.setInteriorPath(new CharacterPath("" + currentChar));
-				;
 				Automata last = automataStack.peek();
 				last.connectToAutomata(next);
 				automataStack.push(next);
@@ -254,7 +262,7 @@ public class NFA {
                 nodes.add(last.inNode);
                 nodes.remove(last.outNode);
                 nodes.add(last.outNode);
-            } else if (currentChar == '.' && i+1 < end) { // Wildcard character. Add
+            } else if (currentChar == '.') { // Wildcard character. Add
 												// AnythingPath.
 			// System.out.println("Wildcard. Adding anything path.");
 				Automata next = new Automata();
@@ -393,7 +401,10 @@ public class NFA {
 					// + startRange + "-" + endRange + ".");
 					inverseAutomata.setInteriorPath(new ConverseRangePath(startRange, endRange));
 					i = i + 5;
-				} else {
+				} else if (regex.charAt(i + 1) == '\\') {
+                    inverseAutomata.setInteriorPath(new ConversePath("" + regex.charAt(i + 2)));
+                    i = i + 2;
+                } else {
 					// System.out.println("Caret. Building InversePath automata for character: "
 					// + regex.charAt(i+1));
 					inverseAutomata.setInteriorPath(new ConversePath("" + regex.charAt(i + 1)));
@@ -455,7 +466,7 @@ public class NFA {
 		else
 			closingBrace = ']';
 		for (int i = start; i < end; i++) {
-			if (regex.charAt(i) == closingBrace)
+			if (regex.charAt(i) == closingBrace && regex.charAt(i-1) != '\\')
 				return i;
 		}
 		return -1;

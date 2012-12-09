@@ -6,25 +6,25 @@ $NONQUOTE [^"] IN $ASCII
 $NONSINGLEQUOTE [^'] IN $ASCII
 
 %% TOKENS
-$ID $LETTER ($LETTER|$DIGIT|_|)($LETTER|$DIGIT|_|)($LETTER|$DIGIT|_|)($LETTER|$DIGIT|_|)($LETTER|$DIGIT|_|)($LETTER|$DIGIT|_|)($LETTER|$DIGIT|_|)($LETTER|$DIGIT|_|)($LETTER|$DIGIT|_|)
+$ID $LETTER($LETTER|$DIGIT|_|)($LETTER|$DIGIT|_|)($LETTER|$DIGIT|_|)($LETTER|$DIGIT|_|)($LETTER|$DIGIT|_|)($LETTER|$DIGIT|_|)($LETTER|$DIGIT|_|)($LETTER|$DIGIT|_|)($LETTER|$DIGIT|_|)
 $ASCII-STR \"($NONQUOTE|\\\")*\"
 $BEGIN begin
 $END end
-$EQ =  
+$EQ =
 $REPLACE replace
 $WITH with
 $IN in
-$SEMICOLON ; 
-$RECREP recursivereplace  
-$GRTNOT >!  
-$PRINT print 
-$OPENPARENS \( 
-$CLOSEPARENS \)  
-$COMMA ,  
-$HASH # 
-$FIND find 
-$DIFF diff   
-$UNION union 
+$SEMICOLON ;
+$RECREP recursivereplace
+$GRTNOT >!
+$PRINT print
+$OPENPARENS \(
+$CLOSEPARENS \)
+$COMMA ,
+$HASH #
+$FIND find
+$DIFF diff
+$UNION union
 $INTERS inters
 $MAXFREQ maxfreqstring 
 $REGEX \'($NONSINGLEQUOTE|\\\')*\'

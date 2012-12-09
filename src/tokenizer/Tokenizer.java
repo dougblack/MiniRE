@@ -27,7 +27,7 @@ public class Tokenizer {
         }
     }
 
-    private TableWalker tw; // generates tokens
+    private GraphWalker gw; // generates tokens
     private ArrayList<Token> tokens; // stores tokens
 
     /**
@@ -43,7 +43,7 @@ public class Tokenizer {
         SpecParser sp = new SpecParser();
         HashMap<String, DFA> dfas = sp.parseFile(grammarFile);
         tokens = new ArrayList<Token>();
-        tw = new TableWalker(programFile, dfas);
+        gw = new GraphWalker(programFile, dfas);
     }
 
     /**
@@ -60,7 +60,7 @@ public class Tokenizer {
         HashMap<String, DFA> dfas = new HashMap<String, DFA>();
         dfas.put(regexId, new DFA(new NFA(regex), 1));
         tokens = new ArrayList<Token>();
-        tw = new TableWalker(programFile, dfas);
+        gw = new GraphWalker(programFile, dfas);
     }
 
     /**
@@ -74,7 +74,7 @@ public class Tokenizer {
         if (!acceptsRegexAsFile) {
             Token token;
             try {
-                while ((token = tw.nextToken()).getId() != "%% EOF") {
+                while ((token = gw.nextToken()).getId() != "%% EOF") {
                     if (!token.getId().equals("%% ERROR")) {
                         tokens.add(token);
                     }
@@ -85,7 +85,7 @@ public class Tokenizer {
         } else {
             Token token;
             try {
-                while ((token = tw.nextToken()).getId() != "%% EOF") {
+                while ((token = gw.nextToken()).getId() != "%% EOF") {
                     if (token.getId().equals("%% ERROR")) {
                         System.out.println("Unknown token " + token.getString() +
                             " at index " + token.getIndex() + " in file " +
