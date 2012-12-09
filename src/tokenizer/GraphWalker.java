@@ -29,6 +29,9 @@ public class GraphWalker {
        as it was the last time a DFA accepted it */
     private String tokenString;
     private String lastAcceptedString;
+    private boolean inDoubleQuotes = false;
+    private boolean inSingleQuotes = false;
+    private boolean escaped = false;
 
 	/**
 	 * Constructs a table walker to generate tokens from a given program file
@@ -68,6 +71,9 @@ public class GraphWalker {
         finishedStepping = false;
         lastAcceptedString = tokenString = "";
         tokenId = "%% ERROR";
+        inDoubleQuotes = false;
+        inSingleQuotes = false;
+        escaped = false;
         char c;
         // Get next char from either buffer or input
         if (buffer.length() > 0) {
@@ -88,6 +94,14 @@ public class GraphWalker {
             dfas.get(s).reset();
         }
         do {
+
+            if (c == '\"' && !inDoubleQuotes && !escaped) inDoubleQuotes = true;
+            else if (c == '\"' && !escaped) inDoubleQuotes = false;
+            else if (c == '\'' && !inSingleQuotes && !escaped) inSingleQuotes = true;
+            else if (c == '\'' && !escaped) inSingleQuotes = false;
+            else if (c == '\\' && !escaped) escaped = true;
+            else if (escaped) escaped = false;
+            else if (c == ' ' && !inDoubleQuotes && !inSingleQuotes && !escaped) break;
             //System.out.println(c);
             step(c);
             tokenString = tokenString + c;
@@ -97,7 +111,7 @@ public class GraphWalker {
                 //System.out.println("breaking while loop");
                 break;
             }
-        } while (((c = nextChar()) > SPACE) && (c < DELETE));
+        } while (((c = nextChar()) >= SPACE) && (c < DELETE));
         if (noToken) {
             //System.out.println("no Token");
             if (c == EOF) {
