@@ -5,7 +5,7 @@ import java.util.HashMap;
 /**
  * Scans a given program file to construct tokens using the given DFAs
  */
-public class TableWalker {
+public class GraphWalker {
 
     private static final int SPACE = 32; // lowest printable ASCII character
     private static final int DELETE = 127; // first non-printable ASCII
@@ -37,7 +37,7 @@ public class TableWalker {
 	 * @param programFile A file to scan for tokens
 	 * @param dfas All DFAs mapped to their corresponding token identifiers
 	 */
-	public TableWalker(String programFile, HashMap<String, DFA> dfas) {
+	public GraphWalker(String programFile, HashMap<String, DFA> dfas) {
         //System.out.println("File " + programFile);
         try {
 		    gc = new GetChar(programFile);
