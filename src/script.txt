@@ -1,7 +1,10 @@
 begin
 matches = find '([A-Za-z])*ment([A-Za-z])*' in "src/input1.txt" inters find '(A|a)([A-Za-z])*' in "src/input2.txt";
+match2 = find '([A-Za-z])*ment([A-Za-z])*' in "src/input1.txt" inters find '([A-Za-z])*ment([A-Za-z])*' in "src/input1.txt";
 n_matches = #matches;
-print (n_matches);
+n_match2 = #match2;
 print (matches);
+print (n_matches);
+print (n_match2);
 replace '([A-Za-z])*ment' with "" in "src/input1.txt" >! "src/output1.txt";
 end

@@ -54,7 +54,6 @@ public class StringList {
                 sl.put(aStrings[i], b.get(aStrings[i]));
             }
         }
-        System.out.println(sl.length());
         return sl;
     }
 

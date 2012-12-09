@@ -150,12 +150,12 @@ public class Tokenizer {
      * @return A list of all scanned tokens, in the order they were scanned
      */
     public ArrayList<Token> getTokens() {
-        for (int i = 0; i < tokens.size(); i++) {
-            System.out.println(tokens.get(i).getId() + ": " +
-                    tokens.get(i).getString() + " at line " +
-                    tokens.get(i).getRow() + ", column " +
-                    tokens.get(i).getStart());
-        }
+//        for (int i = 0; i < tokens.size(); i++) {
+//            System.out.println(tokens.get(i).getId() + ": " +
+//                    tokens.get(i).getString() + " at line " +
+//                    tokens.get(i).getRow() + ", column " +
+//                    tokens.get(i).getStart());
+//        }
         return tokens;
     }
    

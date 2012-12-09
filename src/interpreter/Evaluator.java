@@ -4,11 +4,8 @@ import java.nio.channels.*;
 import java.nio.charset.Charset;
 import java.nio.*;
 import java.util.*;
-import java.util.regex.*;
 
-import com.sun.org.apache.bcel.internal.generic.ACONST_NULL;
 import tokenizer.NFA;
-import tokenizer.Token;
 import tokenizer.Tokenizer;
 
 /**
@@ -25,6 +22,11 @@ public class Evaluator {
         symbolTable = new HashMap<String, Object>();
     }
 
+    /**
+     * Evaluates the AST.
+     * @param head the head
+     * @return the result of the evaluation
+     */
     public Object eval(SyntaxTreeNode head) {
 
         String nodeType = head.nodeType;
@@ -33,7 +35,6 @@ public class Evaluator {
         int count = 0;
 
         if (nodeType == null) {
-            System.out.println("Id: " + head.id);
             return head.value;
         }
         if (nodeType.equals("MiniRE-program")) {
@@ -64,19 +65,25 @@ public class Evaluator {
                 SyntaxTreeNode exp_list = children.get(2);
                 try {
                     StringList exp = (StringList) eval(exp_list.children.get(0));
-                    System.out.println("String list: " + exp.toString());
+                    if (exp.length() > 0)
+                        System.out.println(exp.toString());
+                    else
+                        System.out.println("[]");
                 } catch (ClassCastException cce) {
                     Integer exp  = (Integer) eval(exp_list.children.get(0));
-                    System.out.println("Integer: " + exp);
+                    System.out.println(exp);
                 }
                 SyntaxTreeNode exp_list_tail = exp_list.children.get(1);
                 while (!exp_list_tail.children.get(0).nodeType.equals("EPSILON")) {
                     try {
                         StringList exp = (StringList) eval(exp_list.children.get(0));
-                        System.out.println("String list: " + exp.toString());
+                        if (exp.length() > 0)
+                            System.out.println(exp.toString());
+                        else
+                            System.out.println("[]");
                     } catch (ClassCastException cce) {
                         Integer exp  = (Integer) eval(exp_list.children.get(0));
-                        System.out.println("Integer: " + exp);
+                        System.out.println(exp);
                     }
                     exp_list_tail = exp_list_tail.children.get(2);
                 }
@@ -139,7 +146,7 @@ public class Evaluator {
         } else if (nodeType.equals("FILE-NAME")) {
             return (String) children.get(0).value;
         } else {
-            System.out.println("Reached end?");
+            System.out.println("Finished evaluation.");
         }
         return null;
     }
@@ -156,10 +163,8 @@ public class Evaluator {
      */
     public static StringList find(String regex, String filename) {
         regex = regex.replaceAll("'", "");
-        System.out.println("Finding: " + regex + " in " + filename);
 		Tokenizer d = new Tokenizer("id", regex, filename);
 		d.generateTokens();
-        System.out.println(StringList.toStringList(d.getTokens()).toString());
 		return StringList.toStringList(d.getTokens());
 	}
 
@@ -174,7 +179,6 @@ public class Evaluator {
         replacement = replacement.replaceAll("\"", "");
         file1 = file1.replaceAll("\"", "");
         file2 = file2.replaceAll("\"", "");
-        System.out.println("Replacing: " + regex + " with " + replacement + " in " + file1 + " and print to " + file2);
 
 		String[] matches = find(regex, file1).strings();
 
