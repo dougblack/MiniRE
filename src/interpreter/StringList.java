@@ -101,14 +101,14 @@ public class StringList {
     }
 
     /**
-     * Returns a StringList containing a string in a that has a maximal # of
+     * Returns a string in a that has a maximal # of
      * locations associated with it
      *
      * @param a A StringList
-     * @return a StringList containing a string in a that has a maximal # of
+     * @return a string in a that has a maximal # of
      *          locations associated with it
      */
-    public static StringList maxfreqstring(StringList a) {
+    public static String maxfreqstring(StringList a) {
         return a.maxfreqstring();
     }
 
@@ -252,15 +252,14 @@ public class StringList {
     }
 
     /**
-     * Returns a StringList containing a string in this StringList that has a
+     * Returns a string in this StringList that has a
      * maximal # of locations associated with it
      *
-     * @return a StringList containing a string in this StringList that has a
+     * @return a string in this StringList that has a
      *          maximal # of locations associated with it
      */
-    public StringList maxfreqstring() {
-        StringList sl = new StringList();
-        String maxString = "";
+    public String maxfreqstring() {
+        String maxString = "\"\"";
         int max = -1, count;
 
         if (list.size() > 0) {
@@ -271,12 +270,11 @@ public class StringList {
                 }
                 if (count >= max) {
                     max = count;
-                    maxString = string;
+                    maxString = "\"" + string + "\"";
                 }
             }
-            sl.put(maxString, sl.get(maxString));
         }
-        return sl;
+        return maxString;
     }
 
     /**

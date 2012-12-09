@@ -114,7 +114,9 @@ public class Evaluator {
                 if (symbolTable.containsKey(children.get(0).value)) {
                     return symbolTable.get(children.get(0).value);
                 } else {
-                    return children.get(0).value;
+                    System.out.println("ERROR: " + children.get(0).value +
+                        " has not been initialized.");
+                    System.exit(0);
                 }
             } else if (children.get(0).id != null && children.get(0).id.equals("$LPAREN")) {
                 return eval(children.get(2));
@@ -157,14 +159,13 @@ public class Evaluator {
     }
 
     /**
-     * Returns a string that occurs a maximal number of times in list, in a
-     * StringList, taking into account all strings and all files they appear in.
+     * Returns a string in list that occurs a maximal number of times, taking
+     * into account all strings and all files they appear in
      *
      * @param a A StringList
-     * @return a string that has a maximal # of locations associated with it, in
-     *          a StringList
+     * @return a string that has a maximal # of locations associated with it
      */
-    public static StringList maxFreqString(StringList list) {
+    public static String maxFreqString(StringList list) {
         return list.maxfreqstring();
     }
 
