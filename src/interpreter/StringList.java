@@ -285,21 +285,29 @@ public class StringList {
         Iterator<Location> it;
         String out = "";
 
+        if (list.keySet().size() == 0) {
+            return "[]";
+        }
+        out += "[";
         for (String string : list.keySet()) {
-            out += "\"" + string;
+            out += "(\"" + string;
             files = list.get(string);
 
             for (String file : files.keySet()) {
-                out += "\" <'" + file + "'";
+                out += "\" <" + file + "";
                 it = files.get(file).iterator();
 
                 while (it.hasNext()) {
                     out += "; " + it.next();
                 }
                 out += ">";
+                out += "), ";
             }
-            out += "\n";
         }
+        out +="]";
+
+
+
         return out;
     }
 

@@ -78,6 +78,8 @@ public class Evaluator {
                     StringList exp = (StringList) eval(exp_list.children.get(0));
                     if (exp != null) {
                         System.out.println(exp.toString());
+                    } else {
+                        System.out.println("[]");
                     }
                 } catch (ClassCastException cce) {
                     Integer exp  = (Integer) eval(exp_list.children.get(0));
@@ -89,6 +91,8 @@ public class Evaluator {
                         StringList exp = (StringList) eval(exp_list_tail.children.get(1));
                         if (exp != null) {
                             System.out.println(exp.toString());
+                        } else {
+                            System.out.println("[]");
                         }
                     } catch (ClassCastException cce) {
                         Integer exp  = (Integer) eval(exp_list_tail.children.get(1));
