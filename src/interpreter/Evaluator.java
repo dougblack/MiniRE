@@ -74,15 +74,15 @@ public class Evaluator {
                     System.out.println(exp);
                 }
                 SyntaxTreeNode exp_list_tail = exp_list.children.get(1);
-                while (!exp_list_tail.children.get(0).nodeType.equals("EPSILON")) {
+                while (exp_list_tail.children.get(0).nodeType == null) {
                     try {
-                        StringList exp = (StringList) eval(exp_list.children.get(0));
+                        StringList exp = (StringList) eval(exp_list_tail.children.get(1));
                         if (exp.length() > 0)
                             System.out.println(exp.toString());
                         else
                             System.out.println("[]");
                     } catch (ClassCastException cce) {
-                        Integer exp  = (Integer) eval(exp_list.children.get(0));
+                        Integer exp  = (Integer) eval(exp_list_tail.children.get(1));
                         System.out.println(exp);
                     }
                     exp_list_tail = exp_list_tail.children.get(2);
