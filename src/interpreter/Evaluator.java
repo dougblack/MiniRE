@@ -31,7 +31,9 @@ public class Evaluator {
     public Object eval(SyntaxTreeNode head) {
 
         String nodeType = head.nodeType;
+        String nodeId = head.id;
         ArrayList<SyntaxTreeNode> children = head.children;
+        int count = 0;
 
         if (nodeType == null) {
             return head.value;
@@ -49,22 +51,22 @@ public class Evaluator {
             if (children.get(0).id.equals("$REPLACE")) {
                 String regex = children.get(1).value;
                 String asciiStr = children.get(3).value;
-
-                /* Remove the single quotes from regex and double from asciiStr */
+                ArrayList<String> fileNames = (ArrayList<String>) eval(children.get(5));
+                
+                // Remove the single quotes from regex and double from asciiStr
                 regex = regex.substring(1,regex.length()-1);
                 asciiStr = asciiStr.substring(1,asciiStr.length()-1);
 
-                ArrayList<String> fileNames = (ArrayList<String>) eval(children.get(5));
                 return replace(regex, asciiStr, fileNames.get(0), fileNames.get(1));
             } else if (children.get(0).id.equals("$RECREP")) {
                 String regex = children.get(1).value;
                 String asciiStr = children.get(3).value;
-
-                /* Remove the single quotes from regex and double from asciiStr */
+                ArrayList<String> fileNames = (ArrayList<String>) eval(children.get(5));
+                
+                // Remove the single quotes from regex and double from asciiStr
                 regex = regex.substring(1,regex.length()-1);
                 asciiStr = asciiStr.substring(1,asciiStr.length()-1);
 
-                ArrayList<String> fileNames = (ArrayList<String>) eval(children.get(5));
                 recursivereplace(regex, asciiStr, fileNames.get(0), fileNames.get(1));
             } else if (children.get(0).id.equals("$ID")) {
                 String idName = children.get(0).value;
@@ -72,10 +74,31 @@ public class Evaluator {
                 symbolTable.put(idName, idValue);
             } else if (children.get(0).id.equals("$PRINT")) {
                 SyntaxTreeNode exp_list = children.get(2);
-                printExp(eval(exp_list.children.get(0)));
+                try {
+                    StringList exp = (StringList) eval(exp_list.children.get(0));
+                    if (exp != null) {
+                        System.out.println(exp.toString());
+                    }
+                } catch (ClassCastException cce) {
+                    try {
+                        Integer exp  = (Integer) eval(exp_list.children.get(0));
+                        System.out.println(exp);
+                    } catch (ClassCastException cc) {
+                        String str = (String) eval(exp_list.children.get(0));
+                        System.out.println(str);
+                    }
+                }
                 SyntaxTreeNode exp_list_tail = exp_list.children.get(1);
                 while (exp_list_tail.children.get(0).nodeType == null) {
-                    printExp(eval(exp_list_tail.children.get(1)));
+                    try {
+                        StringList exp = (StringList) eval(exp_list_tail.children.get(1));
+                        if (exp != null) {
+                            System.out.println(exp.toString());
+                        }
+                    } catch (ClassCastException cce) {
+                        Integer exp  = (Integer) eval(exp_list_tail.children.get(1));
+                        System.out.println(exp);
+                    }
                     exp_list_tail = exp_list_tail.children.get(2);
                 }
             }
@@ -84,7 +107,7 @@ public class Evaluator {
                 return eval(children.get(0));
             } else if (children.get(0).id.equals("$HASH")) {
                 return ((StringList) eval(children.get(1))).length();
-            } else if (children.get(0).id.equals("$MAXFREQSTRING")) {
+            } else if (children.get(0).id.equals("$MAXFREQ")) {
                 return ((StringList) symbolTable.get(children.get(2).value)).maxfreqstring();
             }
         } else if (nodeType.equals("FILE-NAMES")) {
@@ -126,13 +149,12 @@ public class Evaluator {
                     StringList result = (StringList) eval(children.get(0));
                     SyntaxTreeNode exp_list = children.get(1);
                     while (!exp_list.children.get(0).nodeType.equals("EPSILON")) {
-                        StringList list = (StringList) eval(exp_list.children.get(1));
                         if (exp_list.children.get(0).children.get(0).id.equals("$DIFF")) {
-                            result = StringList.diff(result, list);
+                            result = StringList.diff(result, (StringList) eval(exp_list.children.get(1)));
                         } else if (exp_list.children.get(0).children.get(0).id.equals("$UNION")) {
-                            result = StringList.union(result, list);
+                            result = StringList.union(result, (StringList) eval(exp_list.children.get(1)));
                         } else if (exp_list.children.get(0).children.get(0).id.equals("$INTERS")) {
-                            result = StringList.inters(result, list);
+                            result = StringList.inters(result, (StringList) eval(exp_list.children.get(1)));
                         }
                         exp_list = exp_list.children.get(2);
                     }
@@ -165,7 +187,6 @@ public class Evaluator {
      * @return a string that has a maximal # of locations associated with it
      */
     public static String maxFreqString(StringList list) {
-        //String mostFrequentString = "";
         return list.maxfreqstring();
     }
 
@@ -204,27 +225,19 @@ public class Evaluator {
     public static boolean replace(String regex, String replacement,
         String file1, String file2) {
 
-		String fileText = "";
-
-        if (file1.equals(file2)) {
-            System.out.println("Error: input and output file are the same in:\n"
-                + "replace \'" + regex + "\' with \"" + replacement + "\" in "
-                + file1 + " >! " + file2);
-            return false;
-        }
-
-		String[] matches = find(regex, file1).strings();
+        String[] matches = find(regex, file1).strings();
+		String fileText;
 
 		if (matches.length < 1) {
 			return false;
 		}
 
-        fileText = getFileText(file1);
+        fileText = FileOperations.getFileText(file1);
 		  
 		for (int i=0; i < matches.length; i++){
 			fileText = fileText.replace(matches[i], replacement);
 		}
-        return writeFile(fileText, file2);
+        return FileOperations.writeFile(fileText, file2);
 	}
 	
 	/**
@@ -243,140 +256,18 @@ public class Evaluator {
      */
     public static void recursivereplace(String regex, String replacement,
         String filename1, String filename2) {
-
-        // Check that filename 1 and filename2 are distinct
-
-        if (filename1.equals(filename2)) {
-            System.out.println("Error: input and output file are the same in:\n"
-                + "recursivereplace \'" + regex + "\' with \"" + replacement +
-                "\" in " + filename1 + " >! " + filename2);
-            return;
-        }
-        
-        // Prevent infinite recursion
-
-        NFA nfa = new NFA(regex);
-        String sub = replacement;
-        
-        while (sub.length() > 0) {
-            if (nfa.testString(nfa.automata(), sub)) {
-                // throw some kind of error - the recursion is infinite
-                System.out.println("Error: infinite loop inevitable at:\n" +
-                    "recursivereplace '" + regex + "' with \"" + replacement +
-                    "\" in " + filename1 + " >! " + filename2);
-                return;
-            }
-            sub = sub.substring(0, sub.length()-1);
-        }
         
 		// Recursively replace until no more changes can be made
-
-        String tempFilename1;
         
-        try {
-            File file = File.createTempFile("MRE", ".txt", new File(System.getProperty("user.dir")));
-            file.deleteOnExit();
-            tempFilename1 = file.getName();
-        } catch (IOException e) {
-            System.out.println("Unexpected IOException");
-            e.printStackTrace();
-            return;
-        }
+        String tempFilename1 = FileOperations.createTempFile();
         Evaluator.replace(regex, replacement, filename1, filename2);
-
-        // I put this check below replace to ensure the output file is created       
-        if (regex.equals("") && replacement.equals("")) {
-            // throw some kind of error - the recursion is infinite
-            System.out.println("Error: infinite loop inevitable at:\n" +
-                "recursivereplace '" + regex + "' with \"" + replacement +
-                "\" in " + filename1 + " >! " + filename2);
-            return;
-        }
 
         while (Evaluator.replace(regex, replacement, filename2, tempFilename1)) {
             if (!Evaluator.replace(regex, replacement, tempFilename1, filename2)) {
                 // Copy 1 to 2 and be done
-                copy(tempFilename1, filename2);
+                FileOperations.copy(tempFilename1, filename2);
                 break;
             }
         }
 	}
-
-	/**
-     * Copies the contents of srcFile to a file named dstFile
-     * Creates dstFile if it doesn't exist; overwrites it if it does
-     * Returns true if and only if the copy was successful
-     *
-     * @param srcFile the file whose contents will be copied
-     * @param dstFile the file to copy to
-     * @return true if and only if the copy was successful
-     */
-    private static boolean copy(String srcFile, String dstFile) {
-        return writeFile(getFileText(srcFile), dstFile);
-    }
-
-    /**
-     * Returns the contents of src
-     *
-     * @param src the file whose contents will be returned
-     * @return the contents of src
-     */
-    private static String getFileText(String src) {
-        String fileText = "";
-
-        try {
-            FileInputStream stream = new FileInputStream(new File(src));
-            FileChannel fc = stream.getChannel();
-            MappedByteBuffer mbb = fc.map(FileChannel.MapMode.READ_ONLY, 0, fc.size());
-            fileText = Charset.defaultCharset().decode(mbb).toString();
-        } catch (FileNotFoundException e) {
-            System.out.println("File " + src + " not found");
-        } catch (IOException e) {
-            System.out.println("Unexpected IOException");
-            e.printStackTrace();
-        }
-        return fileText;
-    }
-
-    /**
-     * Copies the fileText to a file named dstFile
-     * Creates dstFile if it doesn't exist; overwrites it if it does
-     * Returns true if and only if the copy was successful
-     *
-     * @param filetext the text to copy into dstFile
-     * @param dstFile the file to copy to
-     * @return true if and only if the copy was successful
-     */
-    private static boolean writeFile(String fileText, String dstFile) {
-        boolean written = true;
-        try {
-            FileWriter fstream = new FileWriter(dstFile);
-    		BufferedWriter out = new BufferedWriter(fstream);
-        	out.write(fileText);
-        	out.close();
-        } catch (IOException e) {
-            written = false;
-            System.out.println("Unexpected IOException");
-            e.printStackTrace();
-        }
-        return written;
-    }
-
-    /**
-     * Determines expression type and prints out either
-     * an Integer or StringList.
-     * @param exp the expression
-     */
-    public void printExp(Object exp) {
-
-        try {
-            if (exp != null) {
-                System.out.println(((StringList)exp).toString());
-            } else {
-                System.out.println("[]");
-            }
-        } catch (ClassCastException cce) {
-            System.out.println((Integer) exp);
-        }
-    }
 }

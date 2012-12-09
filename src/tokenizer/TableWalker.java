@@ -22,12 +22,6 @@ public class TableWalker {
     private String tokenId; // identifier for the token being generated
     private String file; // a file to scan for tokens
 
-    private int row;
-    private int start;
-    private int end;
-    private int temp;
-    
-    private int spacecounter;
     /* tokenString is the longest string currently being accepted by a DFA, a
        potential string for the current token. If tokenString ends up not being
        accepted by the last DFA, the table walker attempts to return a token
@@ -45,12 +39,6 @@ public class TableWalker {
 	 */
 	public TableWalker(String programFile, HashMap<String, DFA> dfas) {
         //System.out.println("File " + programFile);
-		row = 1;
-		start = 1;
-		end = 1;
-		temp = 1;
-        programFile = programFile.replaceAll("\"", "");
-		//spacecounter = 0;
         try {
 		    gc = new GetChar(programFile);
         } catch (FileNotFoundException e) {
@@ -75,20 +63,22 @@ public class TableWalker {
      *          was encountered or some error occurred
      */
     public Token nextToken() throws IOException {
+        Token token;
         noToken = true;
         finishedStepping = false;
         lastAcceptedString = tokenString = "";
         tokenId = "%% ERROR";
-        //start = end;
         char c;
-
-        start = temp;
         // Get next char from either buffer or input
         if (buffer.length() > 0) {
             c = buffer.charAt(0);
             buffer = buffer.substring(1);
         } else {
             c = advanceToToken();
+        }
+
+        if (c == EOF) {
+            return new Token("%% EOF", "", file, gc.getIndex());
         }
 
         // step through each viable DFA until a longest match is left
@@ -108,30 +98,23 @@ public class TableWalker {
                 break;
             }
         } while (((c = nextChar()) > SPACE) && (c < DELETE));
-        if(c == SPACE || c == DELETE) {
-        	spacecounter++;
-        }
         if (noToken) {
             //System.out.println("no Token");
-
             if (c == EOF) {
-                return new Token("%% EOF", "", file, start, end, row);
+                token = new Token("%% EOF", "", file, gc.getIndex());
             } else {
-                return new Token("%% ERROR", tokenString, file, start, end, row);
+                token = new Token("%% ERROR", tokenString, file,
+                    gc.getIndex() - tokenString.length());
             }
         } else {
             //System.out.println("returning token " + tokenId + ": " +
             //    lastAcceptedString);
             // buffer any chars that were read but not returned
             buffer(lastAcceptedString, tokenString);
-
-            end = start + lastAcceptedString.length();
-            temp = end + spacecounter;
-            
-            //System.out.println("Start: " + start + " End: " + end + " Row: " + row + " Token: " + lastAcceptedString + " spacecounter: " + spacecounter);
-            spacecounter = 0;
-            return new Token(tokenId, lastAcceptedString, file, start, end, row);
+            token = new Token(tokenId, lastAcceptedString, file,
+                gc.getIndex() - tokenString.length());
         }
+        return token;
     }
 
     /**
@@ -162,7 +145,6 @@ public class TableWalker {
         if (viableDFAs.size() < 1) {
             //System.out.println("Finished Stepping");
             finishedStepping = true;
-            
         }
     }
 
@@ -200,26 +182,16 @@ public class TableWalker {
     }
 
     /**
-     * Scans the file until either an ASCII-printable character or EOF is found.
+     * Scans the file until either an ASCII-printable character (not SPACE) or
+     * EOF is found.
      * 
      * @return The character found, or (char) -1 if EOF was reached
      */
     private char advanceToToken() {
         char currentChar = (char) -1;
         
-        while (((currentChar = gc.getNextChar()) != EOF) && ((currentChar <= SPACE) || (currentChar >= DELETE))) {
-            //System.out.println(currentChar);
-        	if(currentChar == SPACE) {
-        		start++;
-        	}
-        	if(currentChar == '\n') {
-        		row++;
-        		start = 1;
-        		temp = 1;
-        		end = 1;
-        	}
-        }
-
+        while (((currentChar = gc.getNextChar()) != EOF)
+                && ((currentChar <= SPACE) || (currentChar >= DELETE)));
         return currentChar;
     }
 }

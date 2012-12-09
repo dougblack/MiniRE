@@ -1,2 +1,3 @@
 #!/bin/bash
-echo 'put your test run script here'
+set -v
+java interpreter/Main script.txt

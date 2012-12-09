@@ -1,48 +1,56 @@
 begin
-print(find '([A-Za-z0-9_])*(A|a)utomata([A-Za-z0-9_])*' in input1.txt);
+print(find '([A-Za-z0-9_])*(A|a)utomata([A-Za-z0-9_])*' in "input1.txt");
 
-Automata = find 'Automata' in input1.txt;
+Automata = find '(.*)Automata(.*)' in "input1.txt";
 n_Automata = #Automata;
-print(maxfreqstring(Automata));
+m_Automata = maxfreqstring(Automata);
+print(m_Automata);
 print(n_Automata);
 
-automata = find 'automata' in input1.txt;
+automata = find '(.*)automata(.*)' in "input1.txt";
 n_automata = #automata;
-print(maxfreqstring(automata));
+m_automata = maxfreqstring(automata);
+print(m_automata);
 print(n_automata);
 
-Graph = find 'Graph' in input1.txt;
+Graph = find '(.*)Graph(.*)' in "input1.txt";
 n_Graph = #Graph;
-print(maxfreqstring(Graph));
+m_Graph = maxfreqstring(Graph);
+print(m_Graph);
 print(n_Graph);
 
-graph = find 'graph' in input1.txt;
+graph = find '(.*)graph(.*)' in "input1.txt";
 n_graph = #graph;
-print(maxfreqstring(graph));
+m_graph = maxfreqstring(graph);
+print(m_graph);
 print(n_graph);
 
-replace 'Automata' with "Graph" in input1.txt >! output1.txt;
-replace 'automata' with "graph" in output1.txt >! output2.txt;
+replace 'Automata' with "Graph" in "input1.txt" >! "output1.txt";
+replace 'automata' with "graph" in "output1.txt" >! "output2.txt";
 
-print(find '([A-Za-z0-9_])*(G|g)raph([A-Za-z0-9_])*' in output2.txt diff find '([A-Za-z0-9_])*Graph([A-Za-z0-9_])*' in input1.txt union find '([A-Za-z0-9_])*graph([A-Za-z0-9_])*' in input1.txt);
+print(find '([A-Za-z0-9_])*(G|g)raph([A-Za-z0-9_])*' in "output2.txt" diff find '([A-Za-z0-9_])*Graph([A-Za-z0-9_])*' in "input1.txt" union find '([A-Za-z0-9_])*graph([A-Za-z0-9_])*' in "input1.txt");
 
-Graph = find 'Graph' in output2.txt;
+Graph = find '(.*)Graph(.*)' in "output2.txt";
 n_Graph = #Graph;
-graph = find 'Graph' in output2.txt;
+graph = find '(.*)graph(.*)' in "output2.txt";
 n_graph = #graph;
 
-new_Auto = find 'Automata' in output2.txt;
+new_Auto = find '(.*)Automata(.*)' in "output2.txt";
 n_Automata = #new_Auto;
-new_auto = find 'automata' in output2.txt;
+new_auto = find '(.*)automata(.*)' in "output2.txt";
 n_automata = #new_auto;
 
-print(maxfreqstring(Automata));
+m_Automata = maxfreqstring(Automata);
+print(m_Automata);
 print(n_Automata);
-print(maxfreqstring(automata));
+m_automata = maxfreqstring(automata);
+print(m_automata);
 print(n_automata);
-print(maxfreqstring(Graph));
+m_Graph = maxfreqstring(Graph);
+print(m_Graph);
 print(n_Graph);
-print(maxfreqstring(graph));
+m_graph = maxfreqstring(graph);
+print(m_graph);
 print(n_graph);
 end
 

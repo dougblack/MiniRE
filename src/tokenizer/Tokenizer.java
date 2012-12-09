@@ -21,9 +21,9 @@ public class Tokenizer {
         System.out.println();
         for (int i = 0; i < tokens.size(); i++) {
             System.out.println(tokens.get(i).getId() + ": " +
-                tokens.get(i).getString() + " at line " +
-                tokens.get(i).getRow() + ", column " +
-                tokens.get(i).getStart());
+                tokens.get(i).getString() + " at index " +
+                tokens.get(i).getIndex() + " in file " +
+                tokens.get(i).getFile());
         }
     }
 
@@ -67,8 +67,10 @@ public class Tokenizer {
      * Repeatedly calls the table walker for the next token in the program file.
      * Stores each token until the end of the file is reached or an unknown
      * token is encountered.
+     *
+     * @return All tokens scanned from the file
      */
-    public void generateTokens() {
+    public ArrayList<Token> generateTokens() {
         if (!acceptsRegexAsFile) {
             Token token;
             try {
@@ -86,12 +88,9 @@ public class Tokenizer {
                 while ((token = tw.nextToken()).getId() != "%% EOF") {
                     if (token.getId().equals("%% ERROR")) {
                         System.out.println("Unknown token " + token.getString() +
-                            " at line " + token.getRow() + ", column " +
-                            token.getStart() + " in file " + token.getFile());
+                            " at index " + token.getIndex() + " in file " +
+                            token.getFile());
                         break;
-                    }
-                    if (token.getId().equals("$ID")) {
-                        token = checkForReservedWord(token);
                     }
                     tokens.add(token);
                 }
@@ -100,42 +99,7 @@ public class Tokenizer {
                 System.out.println("Error: IOException while processing tokens");
             }
         }
-    }
-
-    /**
-     * Ensures the reserved words in the MiniRE language are associated with
-     * their respective tokens rather than the ID token
-     *
-     * @param token A token with a string to evaluate
-     * @return The same token, with a new id if the string matched a keyword
-     */
-    public Token checkForReservedWord(Token token) {
-        if (token.getString().equals("begin")) {
-            token.setId("$BEGIN");
-        } else if (token.getString().equals("end")) {
-            token.setId("$END");
-        } else if (token.getString().equals("find")) {
-            token.setId("$FIND");
-        } else if (token.getString().equals("with")) {
-            token.setId("$WITH");
-        } else if (token.getString().equals("in")) {
-            token.setId("$IN");
-        } else if (token.getString().equals("print")) {
-            token.setId("$PRINT");
-        } else if (token.getString().equals("replace")) {
-            token.setId("$REPLACE");
-        } else if (token.getString().equals("recursivereplace")) {
-            token.setId("$RECREP");
-        } else if (token.getString().equals("inters")) {
-            token.setId("$INTERS");
-        } else if (token.getString().equals("union")) {
-            token.setId("$UNION");
-        } else if (token.getString().equals("diff")) {
-            token.setId("$DIFF");
-        } else if (token.getString().equals("maxfreqstring")) {
-            token.setId("$MAXFREQ");
-        }
-        return token;
+        return tokens;
     }
 
     /**
@@ -147,9 +111,9 @@ public class Tokenizer {
     public ArrayList<Token> getTokens() {
 //        for (int i = 0; i < tokens.size(); i++) {
 //            System.out.println(tokens.get(i).getId() + ": " +
-//                    tokens.get(i).getString() + " at line " +
-//                    tokens.get(i).getRow() + ", column " +
-//                    tokens.get(i).getStart());
+//                    tokens.get(i).getString() + " at index " +
+//                    tokens.get(i).getIndex() + " of file " +
+//                    tokens.get(i).getFile());
 //        }
         return tokens;
     }

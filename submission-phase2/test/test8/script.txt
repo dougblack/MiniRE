@@ -1,17 +1,16 @@
 begin
-replace '.*' with "input2.txt is a MiniRe script with several java comments of different styles - //, /*...*/, and /**...*...*/, etc. Since MiniRE does not accept these comments, let's remove them and make input2.txt a runnable script. Here are all the comments in the script:" in input1.txt >! output1.txt;
+replace 'w' with "input2.txt_is_a_MiniRe_script_with_several_java_comments_of_different_styles_-_//,_/*...*/,_and_/**...*...*/,_etc._Since_MiniRE_does_not_accept_these_comments,_let's_remove_them_and_make_input2.txt_a_runnable_script._Here_are_all_the_comments_in_the_script:" in "input1.txt" >! "output1.txt";
 
-intro = find '.*' in output1.txt;
+intro = find '.*' in "output1.txt";
 one = #intro;
-print(intro);
 msg = maxfreqstring(intro);
 print(msg);
-print(find '13' in output1.txt);
+print(find '13' in "output1.txt");
 
 
-javadoc = find '/[*]\*.*[*]/' in input2.txt;
-slashStar = find '/[*].*[*]/' in input2.txt diff find '/[*]\*.*[*]/' in input2.txt;
-slashes = find '//.*' in input2.txt;
+javadoc = find '/[*]\*.*[*]/' in "input2.txt";
+slashStar = find '/[*].*[*]/' in "input2.txt" diff find '/[*]\*.*[*]/' in "input2.txt";
+slashes = find '//.*' in "input2.txt";
 print(javadoc, slashStar, slashes);
 
 javadoc = #javadoc;
@@ -19,13 +18,13 @@ slashStar = #slashStar;
 slashes = #slashes;
 print(javadoc, slashStar, slashes);
 
-replace '/[*]\*.*[*]/' with "" in input2.txt >! output2.txt;
-replace '/[*].*[*]/' with "" in output2.txt >! output3.txt;
-replace '//.*' with "" in output3.txt >! output4.txt;
+replace '/[*]\*.*[*]/' with ";" in "input2.txt" >! "output2.txt";
+replace '/[*].*[*]/' with ";" in "output2.txt" >! "output3.txt";
+replace '//(.*)' with "/" in "output3.txt" >! "output4.txt";
 
-javadoc = find '/[*]\*.*[*]/' in output4.txt;
-slashStar = find '/[*].*[*]/' in output4.txt diff find '/[*]\*.*[*]/' in output4.txt;
-slashes = find '//.*' in output4.txt;
+javadoc = find '/[*]\*.*[*]/' in "output4.txt";
+slashStar = find '/[*].*[*]/' in "output4.txt" diff find '/[*]\*.*[*]/' in "output4.txt";
+slashes = find '//.*' in "output4.txt";
 print(javadoc, slashStar, slashes);
 
 javadoc = #javadoc;

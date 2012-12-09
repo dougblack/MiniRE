@@ -114,13 +114,13 @@ public class StringList {
     /**
      * Maps tokens to files to the locations of the tokens in the files.
      */
-    private HashMap<String, HashMap<String, TreeSet<Location>>> list;
+    private HashMap<String, HashMap<String, TreeSet<Long>>> list;
 
     /**
      * Constructs a new StringList to represent a string-match list
      */
     public StringList() {
-        list = new HashMap<String, HashMap<String, TreeSet<Location>>>();
+        list = new HashMap<String, HashMap<String, TreeSet<Long>>>();
     }
 
     /**
@@ -131,11 +131,11 @@ public class StringList {
     public void add(Token t) {
         String literal = t.getString();
         String file = t.getFile();
-        Location index = new Location(t.getRow(), t.getStart(), t.getEnd());
-        HashMap<String, TreeSet<Location>> fileList;
-        TreeSet<Location> indices;
+        long index = t.getIndex();
+        HashMap<String, TreeSet<Long>> fileList;
+        TreeSet<Long> indices;
 
-        if (literal == null || file == null || index == null) {
+        if (literal == null || file == null) {
             return;
         }
         if (list.containsKey(literal)) {
@@ -148,15 +148,15 @@ public class StringList {
                 fileList.put(file, indices);
             } else {
                 // The token's string has not been found in this file before
-                indices = new TreeSet<Location>();
+                indices = new TreeSet<Long>();
                 indices.add(index);
                 fileList.put(file, indices);
             }
         } else {
             // The token's string has not been found before
-            indices = new TreeSet<Location>();
+            indices = new TreeSet<Long>();
             indices.add(index);
-            fileList = new HashMap<String, TreeSet<Location>>();
+            fileList = new HashMap<String, TreeSet<Long>>();
             fileList.put(file, indices);
         }
         list.put(literal, fileList);
@@ -169,9 +169,9 @@ public class StringList {
      * @param hm A mapping of files that s appears in to the locations in the
      *          files where it appears
      */
-    public void put(String s, HashMap<String, TreeSet<Location>> hm) {
-        HashMap<String, TreeSet<Location>> fileList;
-        TreeSet<Location> oldIndices, newIndices;
+    public void put(String s, HashMap<String, TreeSet<Long>> hm) {
+        HashMap<String, TreeSet<Long>> fileList;
+        TreeSet<Long> oldIndices, newIndices;
         String[] files;
 
         if (s == null || hm == null || hm.size() < 1) {
@@ -207,7 +207,7 @@ public class StringList {
      * @param s A string to remove from this StringList
      * @return the metadata for s that was removed
      */
-    public HashMap<String, TreeSet<Location>> remove(String s) {
+    public HashMap<String, TreeSet<Long>> remove(String s) {
         return list.remove(s);
     }
 
@@ -227,7 +227,7 @@ public class StringList {
      * @param s A string to in this StringList
      * @return the metadata for s
      */
-    public HashMap<String, TreeSet<Location>> get(String s) {
+    public HashMap<String, TreeSet<Long>> get(String s) {
         return list.get(s);
     }
 
@@ -281,133 +281,28 @@ public class StringList {
      * @return every string in this StringList and all its metadata
      */
     public String toString() {
-        HashMap<String, TreeSet<Location>> files;
-        Iterator<Location> it;
-        String out = "";
+        HashMap<String, TreeSet<Long>> files;
+        Iterator<Long> it;
+        String out = "\n[";
 
-        if (list.keySet().size() == 0) {
-            return "[]";
-        }
-        out += "[ ";
         for (String string : list.keySet()) {
-            out += "(\"" + string;
+            out += "\"" + string + "\"";
             files = list.get(string);
 
             for (String file : files.keySet()) {
-                out += "\" <" + file + "";
+                out += " <'" + file + "'";
                 it = files.get(file).iterator();
 
                 while (it.hasNext()) {
                     out += "; " + it.next();
                 }
                 out += ">";
-                out += "), ";
             }
+            out += "\n";
         }
-        if (out.length() > 2) {
-            out = out.substring(0,out.length()-2);
-        }
-        out +=" ]";
-
-
-
-        return out;
-    }
-
-    public ArrayList<String> print() {
-        ArrayList<String> strings = new ArrayList<java.lang.String>();
-        for (String string : list.keySet()) {
-            strings.add(string);
-        }
-        return strings;
+        return out + "]";
     }
 }
-
-
-/**
- * Represents the line, start index, and end index of a string in a file; All 3
- * are 1-indexed.
- */
-class Location implements Comparable<Location> {
-
-    private int line, start, end;
-
-    /**
-     * Constructs a new Location; note it has no direct ties to any strings
-     *
-     * @param line a line in a file
-     * @param start a column on a line in a file
-     * @param end a column on a line in a file
-     */
-    public Location(int line, int start, int end) {
-        this.line = line;
-        this.start = start;
-        this.end = end;
-    }
-
-    /**
-     * Allows Locations to be sorted. Greater Locations occur later on in files
-     *
-     * @param that Another Location to compare with this one
-     * @return a positive number if this Location occurs later in a file than
-     *          that Location, a negative number if this Location occurs earlier
-     *          in a file than that Location, or 0 otherwise
-     */
-    public int compareTo(Location that) {
-        int comp;
-
-        if (this.line == that.getLine()) {
-            if (this.start == that.getStart()) {
-                comp = this.end - that.getEnd();
-            } else {
-                comp = this.start - that.getStart();
-            }
-        } else {
-            comp = this.line - that.getLine();
-        }
-        return comp;
-    }
-
-    /**
-     * Overrides the generic toString method. Displays all information contained
-     * in this Location object
-     *
-     * @return all fields of this Location in a readable format
-     */
-    public String toString() {
-        return "Ln " + line + ", Col " + start + "-" + end;
-    }
-
-    /**
-     * Returns this Location's line
-     *
-     * @return this Location's line
-     */
-    public int getLine() {
-        return line;
-    }
-
-    /**
-     * Returns this Location's start index within its line
-     *
-     * @return this Location's start index
-     */
-    public int getStart() {
-        return start;
-    }
-
-    /**
-     * Returns this Location's end index
-     *
-     * @return this Location's end index
-     */
-    public int getEnd() {
-        return end;
-    }
-}
-
-
-
 
 
 

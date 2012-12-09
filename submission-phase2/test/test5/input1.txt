@@ -1,4 +1,4 @@
-﻿CS : Languages and Computation Homework I
+CS : Languages and Computation Homework I
 Due Date : September th, Thursday, pm
 
 
@@ -109,3 +109,4 @@ You need to submit the following with your homework submission (via T-square):
 
       d) Some documentation of the organization of the code and its functionality with respect to different modules etc.
  
+

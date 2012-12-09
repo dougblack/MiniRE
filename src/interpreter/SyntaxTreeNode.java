@@ -9,7 +9,6 @@ public class SyntaxTreeNode {
 
     Token token;
     ArrayList<SyntaxTreeNode> children;
-    int lineNumber;
     String id;
     String value;
     String nodeType;
@@ -17,12 +16,10 @@ public class SyntaxTreeNode {
     /**
      * This constructor is used when a terminal was enountered.
      * @param nodeToken the token of the terminal
-     * @param tokenLineNumber this is probably deprecated.
      */
-    public SyntaxTreeNode(Token nodeToken, int tokenLineNumber) {
+    public SyntaxTreeNode(Token nodeToken) {
         this.children = new ArrayList<SyntaxTreeNode>();
         this.token = nodeToken;
-        this.lineNumber = tokenLineNumber;
         this.id = token.getId();
         this.value = token.getString();
     }

@@ -1,4 +1,4 @@
 begin
-in = find 'If[ ]you[ ]are.*from[ ]seeing[ ]this.' in input1.txt;
+in = find 'If_you_are_seeing_this.*' in "input1.txt";
 print(in);
 end
