@@ -31,9 +31,7 @@ public class Evaluator {
     public Object eval(SyntaxTreeNode head) {
 
         String nodeType = head.nodeType;
-        String nodeId = head.id;
         ArrayList<SyntaxTreeNode> children = head.children;
-        int count = 0;
 
         if (nodeType == null) {
             return head.value;
@@ -51,22 +49,22 @@ public class Evaluator {
             if (children.get(0).id.equals("$REPLACE")) {
                 String regex = children.get(1).value;
                 String asciiStr = children.get(3).value;
-                ArrayList<String> fileNames = (ArrayList<String>) eval(children.get(5));
-                
-                // Remove the single quotes from regex and double from asciiStr
+
+                /* Remove the single quotes from regex and double from asciiStr */
                 regex = regex.substring(1,regex.length()-1);
                 asciiStr = asciiStr.substring(1,asciiStr.length()-1);
 
+                ArrayList<String> fileNames = (ArrayList<String>) eval(children.get(5));
                 return replace(regex, asciiStr, fileNames.get(0), fileNames.get(1));
             } else if (children.get(0).id.equals("$RECREP")) {
                 String regex = children.get(1).value;
                 String asciiStr = children.get(3).value;
-                ArrayList<String> fileNames = (ArrayList<String>) eval(children.get(5));
-                
-                // Remove the single quotes from regex and double from asciiStr
+
+                /* Remove the single quotes from regex and double from asciiStr */
                 regex = regex.substring(1,regex.length()-1);
                 asciiStr = asciiStr.substring(1,asciiStr.length()-1);
 
+                ArrayList<String> fileNames = (ArrayList<String>) eval(children.get(5));
                 recursivereplace(regex, asciiStr, fileNames.get(0), fileNames.get(1));
             } else if (children.get(0).id.equals("$ID")) {
                 String idName = children.get(0).value;
@@ -74,31 +72,10 @@ public class Evaluator {
                 symbolTable.put(idName, idValue);
             } else if (children.get(0).id.equals("$PRINT")) {
                 SyntaxTreeNode exp_list = children.get(2);
-                try {
-                    StringList exp = (StringList) eval(exp_list.children.get(0));
-                    if (exp != null) {
-                        System.out.println(exp.toString());
-                    }
-                } catch (ClassCastException cce) {
-                    try {
-                        Integer exp  = (Integer) eval(exp_list.children.get(0));
-                        System.out.println(exp);
-                    } catch (ClassCastException cc) {
-                        String str = (String) eval(exp_list.children.get(0));
-                        System.out.println(str);
-                    }
-                }
+                printExp(eval(exp_list.children.get(0)));
                 SyntaxTreeNode exp_list_tail = exp_list.children.get(1);
                 while (exp_list_tail.children.get(0).nodeType == null) {
-                    try {
-                        StringList exp = (StringList) eval(exp_list_tail.children.get(1));
-                        if (exp != null) {
-                            System.out.println(exp.toString());
-                        }
-                    } catch (ClassCastException cce) {
-                        Integer exp  = (Integer) eval(exp_list_tail.children.get(1));
-                        System.out.println(exp);
-                    }
+                    printExp(eval(exp_list_tail.children.get(1)));
                     exp_list_tail = exp_list_tail.children.get(2);
                 }
             }
@@ -107,7 +84,7 @@ public class Evaluator {
                 return eval(children.get(0));
             } else if (children.get(0).id.equals("$HASH")) {
                 return ((StringList) eval(children.get(1))).length();
-            } else if (children.get(0).id.equals("$MAXFREQ")) {
+            } else if (children.get(0).id.equals("$MAXFREQSTRING")) {
                 return ((StringList) symbolTable.get(children.get(2).value)).maxfreqstring();
             }
         } else if (nodeType.equals("FILE-NAMES")) {
@@ -149,12 +126,13 @@ public class Evaluator {
                     StringList result = (StringList) eval(children.get(0));
                     SyntaxTreeNode exp_list = children.get(1);
                     while (!exp_list.children.get(0).nodeType.equals("EPSILON")) {
+                        StringList list = (StringList) eval(exp_list.children.get(1));
                         if (exp_list.children.get(0).children.get(0).id.equals("$DIFF")) {
-                            result = StringList.diff(result, (StringList) eval(exp_list.children.get(1)));
+                            result = StringList.diff(result, list);
                         } else if (exp_list.children.get(0).children.get(0).id.equals("$UNION")) {
-                            result = StringList.union(result, (StringList) eval(exp_list.children.get(1)));
+                            result = StringList.union(result, list);
                         } else if (exp_list.children.get(0).children.get(0).id.equals("$INTERS")) {
-                            result = StringList.inters(result, (StringList) eval(exp_list.children.get(1)));
+                            result = StringList.inters(result, list);
                         }
                         exp_list = exp_list.children.get(2);
                     }
@@ -187,6 +165,7 @@ public class Evaluator {
      * @return a string that has a maximal # of locations associated with it
      */
     public static String maxFreqString(StringList list) {
+        //String mostFrequentString = "";
         return list.maxfreqstring();
     }
 
@@ -270,4 +249,22 @@ public class Evaluator {
             }
         }
 	}
+
+    /**
+     * Determines expression type and prints out either
+     * an Integer or StringList.
+     * @param exp the expression
+     */
+    public void printExp(Object exp) {
+
+        try {
+            if (exp != null) {
+                System.out.println(((StringList)exp).toString());
+            } else {
+                System.out.println("[]");
+            }
+        } catch (ClassCastException cce) {
+            System.out.println((Integer) exp);
+        }
+    }
 }
