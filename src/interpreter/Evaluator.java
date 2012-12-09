@@ -84,7 +84,7 @@ public class Evaluator {
                 return eval(children.get(0));
             } else if (children.get(0).id.equals("$HASH")) {
                 return ((StringList) eval(children.get(1))).length();
-            } else if (children.get(0).id.equals("$MAXFREQSTRING")) {
+            } else if (children.get(0).id.equals("$MAXFREQ")) {
                 return ((StringList) symbolTable.get(children.get(2).value)).maxfreqstring();
             }
         } else if (nodeType.equals("FILE-NAMES")) {
@@ -155,18 +155,6 @@ public class Evaluator {
             return filename;
         }
         return null;
-    }
-
-    /**
-     * Returns a string in list that occurs a maximal number of times, taking
-     * into account all strings and all files they appear in
-     *
-     * @param a A StringList
-     * @return a string that has a maximal # of locations associated with it
-     */
-    public static String maxFreqString(StringList list) {
-        //String mostFrequentString = "";
-        return list.maxfreqstring();
     }
 
 	/**
