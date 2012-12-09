@@ -11,8 +11,7 @@ import java.util.*;
 
 /**
  * 
- * Currently performs find and replace operations on text files. Needs to be
- * expanded to walk the AST tree
+ * Evaluates an AST Tree
  *
  */
 public class Evaluator {

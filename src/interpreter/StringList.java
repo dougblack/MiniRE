@@ -244,9 +244,11 @@ public class StringList {
     }
 
     /**
-     * Returns a string that has a maximal # of locations associated with it
+     * Returns a StringList containing a string in this StringList that has a
+     * maximal # of locations associated with it
      *
-     * @return a string that has a maximal # of locations associated with it
+     * @return a StringList containing a string in this StringList that has a
+     *          maximal # of locations associated with it
      */
     public StringList maxfreqstring() {
         String maxStringKey = "";

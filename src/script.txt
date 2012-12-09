@@ -1,9 +1,25 @@
 begin
-matches = find '([A-Za-z])*ment([A-Za-z])*' in "input1.txt" inters find '(A|a)([A-Za-z])*' in "input2.txt";
-match2 = find '([A-Za-z])*ment([A-Za-z])*' in "input1.txt" inters find '([A-Za-z])*ment([A-Za-z])*' in "input1.txt";
-n_matches = #matches;
-n_match2 = #match2;
-print (n_matches, matches);
-print (n_match2, match2);
-replace '([A-Za-z])*ment' with "" in "input1.txt" >! "output1.txt";
+
+under = find '.*_.*' in "input1.txt";
+print(under);
+nUnder = #under;
+mUnder = maxfreqstring(under);
+print((nUnder));
+
+dash = find '.*_.*' in "input1.txt";
+nDash = #dash;
+mDash = maxfreqstring(dash);
+print(nDash);
+
+recursivereplace '_' with "-" in "input1.txt" >! "output1.txt";
+
+under2 = find '.*_.*' in "output1.txt";
+nUnder2 = #under2;
+mUnder2 = maxfreqstring(under2);
+
+dash2 = find '.*-.*' in "output1.txt";
+nDash2 = #dash2;
+mDash2 = maxfreqstring(dash2);
+
+print(mUnder2, nUnder2, mDash2, nDash2);
 end

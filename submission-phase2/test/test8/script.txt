@@ -5,11 +5,10 @@ intro = find '.*' in "output1.txt";
 one = #intro;
 msg = maxfreqstring(intro);
 print(msg);
-print(find '13' in "output1.txt");
 
 
-javadoc = find '/[*]\*.*[*]/' in "input2.txt";
-slashStar = find '/[*].*[*]/' in "input2.txt" diff find '/[*]\*.*[*]/' in "input2.txt";
+javadoc = find '/[*][*].*[*]/' in "input2.txt";
+slashStar = find '/[*].*[*]/' in "input2.txt" diff find '/[*][*].*[*]/' in "input2.txt";
 slashes = find '//.*' in "input2.txt";
 print(javadoc, slashStar, slashes);
 
@@ -18,12 +17,12 @@ slashStar = #slashStar;
 slashes = #slashes;
 print(javadoc, slashStar, slashes);
 
-replace '/[*]\*.*[*]/' with ";" in "input2.txt" >! "output2.txt";
-replace '/[*].*[*]/' with ";" in "output2.txt" >! "output3.txt";
-replace '//(.*)' with "/" in "output3.txt" >! "output4.txt";
+replace '/[*][*].*[*]/' with " " in "input2.txt" >! "output2.txt";
+replace '/[*].*[*]/' with " " in "output2.txt" >! "output3.txt";
+replace '//(.*)' with " " in "output3.txt" >! "output4.txt";
 
-javadoc = find '/[*]\*.*[*]/' in "output4.txt";
-slashStar = find '/[*].*[*]/' in "output4.txt" diff find '/[*]\*.*[*]/' in "output4.txt";
+javadoc = find '/[*][*].*[*]/' in "output4.txt";
+slashStar = find '/[*].*[*]/' in "output4.txt" diff find '/[*][*].*[*]/' in "output4.txt";
 slashes = find '//.*' in "output4.txt";
 print(javadoc, slashStar, slashes);
 
