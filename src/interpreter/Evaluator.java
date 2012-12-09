@@ -170,6 +170,9 @@ public class Evaluator {
      *          metadata
      */
     public static StringList find(String regex, String filename){
+        filename = filename.replaceAll("\"", "");
+        regex = regex.replaceAll("'", "");
+        System.out.println(filename);
 		Tokenizer d = new Tokenizer("id", regex, filename);
 		d.generateTokens();
 
@@ -192,6 +195,9 @@ public class Evaluator {
      */
     public static boolean replace(String regex, String replacement,
         String file1, String file2) {
+        regex = regex.replaceAll("'", "");
+        file1 = file1.replace("\"", "");
+        file2 = file2.replace("\"", "");
 
 		String fileText = "";
 
