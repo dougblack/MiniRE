@@ -283,24 +283,33 @@ public class StringList {
     public String toString() {
         HashMap<String, TreeSet<Long>> files;
         Iterator<Long> it;
-        String out = "\n[";
 
+        if (list.keySet().size() == 0) {
+            return "[]";
+        }
+
+        String out = "[ ";
         for (String string : list.keySet()) {
-            out += "\"" + string + "\"";
+            out += "(\"" + string;
             files = list.get(string);
 
             for (String file : files.keySet()) {
-                out += " <'" + file + "'";
+                out += "\" <" + file + "";
                 it = files.get(file).iterator();
 
                 while (it.hasNext()) {
                     out += "; " + it.next();
                 }
                 out += ">";
+                out += "), ";
             }
-            out += "\n";
         }
-        return out + "]";
+        if (out.length() > 2) {
+            out = out.substring(0,out.length()-2);
+        }
+        out +=" ]";
+
+        return out;
     }
 }
 
