@@ -126,12 +126,13 @@ public class Evaluator {
                     StringList result = (StringList) eval(children.get(0));
                     SyntaxTreeNode exp_list = children.get(1);
                     while (!exp_list.children.get(0).nodeType.equals("EPSILON")) {
+                        StringList list = (StringList) eval(exp_list.children.get(1));
                         if (exp_list.children.get(0).children.get(0).id.equals("$DIFF")) {
-                            result = StringList.diff(result, (StringList) eval(exp_list.children.get(1)));
+                            result = StringList.diff(result, list);
                         } else if (exp_list.children.get(0).children.get(0).id.equals("$UNION")) {
-                            result = StringList.union(result, (StringList) eval(exp_list.children.get(1)));
+                            result = StringList.union(result, list);
                         } else if (exp_list.children.get(0).children.get(0).id.equals("$INTERS")) {
-                            result = StringList.inters(result, (StringList) eval(exp_list.children.get(1)));
+                            result = StringList.inters(result, list);
                         }
                         exp_list = exp_list.children.get(2);
                     }
@@ -361,6 +362,11 @@ public class Evaluator {
         return written;
     }
 
+    /**
+     * Determines expression type and prints out either
+     * an Integer or StringList.
+     * @param exp the expression
+     */
     public void printExp(Object exp) {
 
         try {

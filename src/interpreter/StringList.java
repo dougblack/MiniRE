@@ -288,7 +288,7 @@ public class StringList {
         if (list.keySet().size() == 0) {
             return "[]";
         }
-        out += "[";
+        out += "[ ";
         for (String string : list.keySet()) {
             out += "(\"" + string;
             files = list.get(string);
@@ -304,7 +304,10 @@ public class StringList {
                 out += "), ";
             }
         }
-        out +="]";
+        if (out.length() > 2) {
+            out = out.substring(0,out.length()-2);
+        }
+        out +=" ]";
 
 
 
