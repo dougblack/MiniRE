@@ -14,7 +14,7 @@ public class Tokenizer {
 	
     public static void main(String[] args) {
         //Tokenizer d = new Tokenizer("token_spec.txt", "input2.txt");
-        Tokenizer d = new Tokenizer("ment", "([A-Za-z])*ment([A-Za-z])*", "src/input2.txt");
+        Tokenizer d = new Tokenizer("ment", "([A-Za-z])*ment([A-Za-z])*", "src/input1.txt");
         d.generateTokens();
         ArrayList<Token> tokens = d.getTokens();
 
@@ -150,6 +150,12 @@ public class Tokenizer {
      * @return A list of all scanned tokens, in the order they were scanned
      */
     public ArrayList<Token> getTokens() {
+        for (int i = 0; i < tokens.size(); i++) {
+            System.out.println(tokens.get(i).getId() + ": " +
+                    tokens.get(i).getString() + " at line " +
+                    tokens.get(i).getRow() + ", column " +
+                    tokens.get(i).getStart());
+        }
         return tokens;
     }
    

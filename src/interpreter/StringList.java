@@ -30,6 +30,9 @@ public class StringList {
      * Performs the union operation on the 2 given StringLists
      */
     public static StringList union(StringList a, StringList b) {
+        if (b == null)
+            return a;
+
         String[] bStrings = b.strings();
 
         for (int i=0; i < bStrings.length; i++) {
@@ -51,6 +54,7 @@ public class StringList {
                 sl.put(aStrings[i], b.get(aStrings[i]));
             }
         }
+        System.out.println(sl.length());
         return sl;
     }
 
@@ -250,7 +254,16 @@ public class StringList {
         }
         return out;
     }
+
+    public ArrayList<String> print() {
+        ArrayList<String> strings = new ArrayList<java.lang.String>();
+        for (String string : list.keySet()) {
+            strings.add(string);
+        }
+        return strings;
+    }
 }
+
 
 /**
  * Represents the line, start index, and end index of a string in a file; All 3

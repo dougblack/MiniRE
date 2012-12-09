@@ -48,6 +48,8 @@ public class TableWalker {
 		start = 1;
 		end = 1;
 		temp = 1;
+        programFile = programFile.replaceAll("\"", "");
+        System.out.println("File: " + programFile);
 		//spacecounter = 0;
         try {
 		    gc = new GetChar(programFile);

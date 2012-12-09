@@ -8,7 +8,7 @@ public class GetChar {
     
    public GetChar (String filename) throws FileNotFoundException, IOException { 
 	   File file = new File(filename);
-	   reader=new BufferedReader(
+	   reader = new BufferedReader(
 	   new InputStreamReader(
 		        new FileInputStream(file),
 		        Charset.forName("UTF-8")));

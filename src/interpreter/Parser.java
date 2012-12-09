@@ -25,7 +25,7 @@ public class Parser {
      */
     public SyntaxTreeNode parse() {
         System.out.println("BUILDING TREE...");
-        SyntaxTreeNode program = new SyntaxTreeNode("PROGRAM");
+        SyntaxTreeNode program = new SyntaxTreeNode("MiniRE-program");
         stack.push(program);
         expect("$BEGIN", "start: begin expected");
         stack.peek().addChild(statement_list());
@@ -224,6 +224,8 @@ public class Parser {
             expTailNode.addChild(bin_op());
             expTailNode.addChild(term());
             expTailNode.addChild(exp_tail());
+        } else {
+            expTailNode.addChild(epsilon());
         }
         stack.pop();
         return expTailNode;
