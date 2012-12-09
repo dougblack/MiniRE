@@ -1,2 +1,5 @@
+#!/bin/bash
 set -v
-echo 'fill out with your build instructions'
+javac tokenizer/*.java interpreter/*.java
+java interpreter/Main
+

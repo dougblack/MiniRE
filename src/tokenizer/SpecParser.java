@@ -9,10 +9,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.ArrayList;
 
-// TODO - FIX SPACES IN REGEX -- see below. I traced the space issue, and it
-// would be better to handle it in NFA.java
-// - Al
-
+/**
+ * Generates token archetypes from a file of token definitions.
+ */
 public class SpecParser {
 
 	HashMap<String, String> specDefinitions;
@@ -23,7 +22,7 @@ public class SpecParser {
 
 	public static void main(String args[]) {
 		SpecParser sp = new SpecParser();
-		sp.parseFile("src/token_spec.txt");
+		sp.parseFile("token_spec.txt");
 		for (Map.Entry<String, String> specEntry : sp.specDefinitions.entrySet()) {
 			System.out.println("Entry: " + specEntry.getKey() + ". Value: " + specEntry.getValue());
 		}
@@ -33,6 +32,10 @@ public class SpecParser {
 		}*/
 	}
 
+    /**
+     * Creates a new SpecParser and sets it up to be ready to parse a file of
+     * token definitions
+     */
 	public SpecParser() {
 		specDefinitions = new HashMap<String, String>();
 		specDFAs = new HashMap<String, DFA>();
@@ -47,8 +50,9 @@ public class SpecParser {
 	 * substituting in the regex from other token definitions and calculating
 	 * inclusion principles. (i.e. [^A-Z] IN $ALPHA).
 	 * 
-	 * @param filename
-	 * @return
+	 * @param filename A file containing token definitions
+	 * @return A mapping of token identifiers to DFAs built from each particular
+     *          token's regex definition
 	 */
 	public HashMap<String, DFA> parseFile(String filename) {
         HashMap<String, String> replacements = new HashMap<String, String>();
@@ -137,8 +141,10 @@ public class SpecParser {
 	}
 
 	/*
-	 * This method grabs lines and splits them into (token/spec name,
-	 * definition).
+	 * This method splits lines into (token/spec name, definition).
+     * 
+	 * @param filename A file containing token definitions
+	 * @return A mapping of token identifiers to their particular regexes
 	 */
 	public HashMap<String, String> readFile(String filename) {
 		HashMap<String, String> specDefinitions = new HashMap<String, String>();
@@ -173,14 +179,45 @@ public class SpecParser {
 		return specDefinitions;
 	}
 
+    /**
+     * Determines if c has an ASCII value no greater than rangeStart and no less
+     * than rangeEnd
+     * 
+	 * @param c A char
+	 * @param rangeStart A char that is no greater than rangeEnd
+	 * @param rangeEnd A char that is no less than rangeStart
+	 * @return true if and only if c has an ASCII value no greater than
+     *          rangeStart and no less than rangeEnd
+	 */
 	public static boolean charIsInRange(char c, char rangeStart, char rangeEnd) {
 		return (c >= rangeStart && c <= rangeEnd);
 	}
 
+    /**
+     * Determines if all characters from testStart to testEnd on an ASCII chart
+     * are no greater than rangeStart and no less than rangeEnd
+     * 
+	 * @param testStart A char that is no greater than testEnd
+	 * @param testEnd A char that is no less than testStart
+	 * @param rangeStart A char that is no greater than rangeEnd
+	 * @param rangeEnd A char that is no less than rangeStart
+	 * @return true if and only if all characters from testStart to testEnd on
+     *          an ASCII chart are no greater than rangeStart and no less than
+     *          rangeEnd
+	 */
 	public static boolean rangeIsInRange(char testStart, char testEnd, char rangeStart, char rangeEnd) {
 		return (charIsInRange(testStart, rangeStart, rangeEnd) && charIsInRange(testEnd, rangeStart, rangeEnd));
 	}
 
+    /**
+     * Returns a range of characters with char c removed, represented as a
+     * string like "a-df-z", given e, a, z as parameters
+     * 
+	 * @param c A char
+	 * @param rangeStart A char that is no greater than rangeEnd
+	 * @param rangeEnd A char that is no less than rangeStart
+	 * @return a range of characters with char c removed, in a string
+	 */
 	public String excludeChar(char c, char rangeStart, char rangeEnd) {
 		String fixedRange = "";
 		if (c == rangeStart) {
@@ -194,6 +231,18 @@ public class SpecParser {
 		return fixedRange;
 	}
 
+	/**
+     * Returns a range of characters with all chars from excludeStart to
+     * excludeEnd removed, represented as a string like "a-dp-z", given
+     * e, o, a, z as parameters
+     * 
+	 * @param excludeStart A char that is no greater than excludeEnd
+	 * @param excludeEnd A char that is no less than excludeStart
+	 * @param rangeStart A char that is no greater than rangeEnd
+	 * @param rangeEnd A char that is no less than rangeStart
+	 * @return a range of characters with all chars from excludeStart to
+     *          excludeEnd removed, in a string
+	 */
 	public String excludeRange(char excludeStart, char excludeEnd, char rangeStart, char rangeEnd) {
 		String fixedRange = "";
 		

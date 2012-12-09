@@ -11,6 +11,18 @@ public class Token {
 	private int end; // column of the last character in this token's string
 	private int row; // line this token was found on in a file
 
+    /**
+     * Constructs a token with the identifier id, that represents the string
+     * string that was found in file on line row. The first and last characters
+     * occurred in columns start and end, respectively.
+     *
+     * @param id The identifier for this token
+     * @param string The literal string this token will represent
+     * @param file The name of the file this token was found in
+     * @param start The column of the first character in string, from line row
+     * @param end column of the last character in string
+     * @param row line in the file that this string appeared on
+     */
 	public Token(String id, String string, String file, int start, int end, int row) {
 		this.id = id;
 		this.string = string;
@@ -28,14 +40,14 @@ public class Token {
 	public String getId() {
 		return id;
 	}
+
     /**
      * Sets this token's identifier
      * 
-
-     * @param The new identifier for this token
+     * @param id The new identifier for this token
      */
-	public void setId(String ID) {
-		id=ID;
+	public void setId(String id) {
+		this.id = id;
 	}
 	
     /**
@@ -50,8 +62,7 @@ public class Token {
     /**
      * Sets the literal string this token represents
      * 
-
-     * @param The new literal string this token will represent
+     * @param str The new literal string this token will represent
      */
 	public void setString(String str) {
 		string = str;
@@ -60,7 +71,6 @@ public class Token {
     /**
      * Returns the name of the file this token was found in
      * 
-
      * @return The name of the file this token was found in
      */
 	public String getFile() {
@@ -77,17 +87,51 @@ public class Token {
 		return id + ": " + string;
 	}
 
+    /**
+     * Checks if testId is the same as this token's id
+     * 
+     * @param testId An identifier to compare with this token's id
+     * @return true if and only if testId is the same as id
+     */
     public boolean equals(String testId) {
         return testId.equals(id);
     }
 
+    /**
+     * Checks if testId is not the same as this token's id
+     * 
+     * @param testId An identifier to compare with this token's id
+     * @return true if and only if testId is not the same as id
+     */
     public boolean notEquals(String testId) {
         return !this.equals(testId);
     }
     
-    //accessors
-    public int getStart(){return this.start;}
-    public int getEnd() {return this.end;}
-    public int getRow(){return this.row;}
+    /**
+     * Returns the column of the first character in string
+     * 
+     * @return The column of the first character in string
+     */
+    public int getStart() {
+        return this.start;
+    }
+
+    /**
+     * Returns the column of the last character in string
+     * 
+     * @return The column of the last character in string
+     */
+    public int getEnd() {
+        return this.end;
+    }
+
+    /**
+     * Returns the line in this string appeared on in its file
+     * 
+     * @return The line in this string appeared on in its file
+     */
+    public int getRow() {
+        return this.row;
+    }
     
 }

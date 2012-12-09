@@ -10,7 +10,7 @@ print(find '([A-Za-z0-9_])*(A|a)utomata([A-Za-z0-9_])*' in input1.txt);
  *
  * (Not that we're trying to execute this script);
  */
-Automata = find 'Automata' in input1.txt;
+Automata = find 'AutomataAutomataAutomata' in input1.txt;
 n_Automata = #Automata;
 print(maxfreqstring(Automata));/****/
 print(n_Automata);
@@ -20,7 +20,7 @@ n_automata = #automata;
 print(maxfreqstring(automata));
 print(n_automata);
 
-Graph = find 'Graph' in input1.txt;
+Graph = find 'GraphGraphGraphGraph' in input1.txt;
 n_Graph = #Graph;
 print(maxfreqstring(Graph));
 print(n_Graph);

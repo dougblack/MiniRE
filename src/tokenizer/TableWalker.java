@@ -44,6 +44,7 @@ public class TableWalker {
 	 * @param dfas All DFAs mapped to their corresponding token identifiers
 	 */
 	public TableWalker(String programFile, HashMap<String, DFA> dfas) {
+        //System.out.println("File " + programFile);
 		row = 1;
 		start = 1;
 		end = 1;
@@ -54,10 +55,12 @@ public class TableWalker {
 		    gc = new GetChar(programFile);
         } catch (FileNotFoundException e) {
             // Signal an error somehow
-            System.out.println("File not found");
+            System.out.println("File " + programFile + " not found");
+            e.printStackTrace();
         } catch (IOException e) {
             // Signal an error somehow
             System.out.println("IOException");
+            e.printStackTrace();
         }
         this.dfas = dfas;
         file = programFile;

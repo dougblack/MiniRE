@@ -13,7 +13,10 @@ import java.util.Iterator;
 public class StringList {
 
     /**
-     * Converts the given arraylist of tokens to a StringList
+     * Converts the given Arraylist of tokens to a StringList
+     *
+     * @param aList An ArrayList of tokens
+     * @return a StringList of all the tokens's fields in the given ArrayList
      */
     public static StringList toStringList(ArrayList<Token> aList) {
         StringList sl = new StringList();
@@ -28,6 +31,11 @@ public class StringList {
 
     /**
      * Performs the union operation on the 2 given StringLists
+     *
+     * @param a A StringList
+     * @param b A StringList
+     * @return a StringList of all the strings in a and all the tokens in b,
+     *          with all metadata from the original StringLists
      */
     public static StringList union(StringList a, StringList b) {
         if (b == null)
@@ -43,6 +51,11 @@ public class StringList {
 
     /**
      * Performs the inters operation on the 2 given StringLists
+     *
+     * @param a A StringList
+     * @param b A StringList
+     * @return a StringList containing only the strings present in both a and b,
+     *          with all the metadata for those strings
      */
     public static StringList inters(StringList a, StringList b) {
         StringList sl = new StringList();
@@ -59,6 +72,12 @@ public class StringList {
 
     /**
      * Performs the diff operation on the 2 given StringLists, as a diff b
+     *
+     * @param a A StringList
+     * @param b A StringList
+     * @return a StringList containing only the strings present in a but not b,
+     *          with all the metadata for those strings that are in a and b
+     *          removed
      */
     public static StringList diff(StringList a, StringList b) {
         String[] bStrings = b.strings();
@@ -73,13 +92,19 @@ public class StringList {
 
     /**
      * Returns the number of strings in the given StringList
+     *
+     * @param a A StringList
+     * @return the number of strings in a
      */
     public static int length(StringList a) {
         return a.length();
     }
 
     /**
-     * Returns the string that appears most often in the given StringList
+     * Returns a string that has a maximal # of locations associated with it
+     *
+     * @param a A StringList
+     * @return a string that has a maximal # of locations associated with it
      */
     public static String maxfreqstring(StringList a) {
         return a.maxfreqstring();
@@ -100,6 +125,8 @@ public class StringList {
 
     /**
      * Adds the string and metadata in the given token to this StringList
+     * 
+     * @param t A token
      */
     public void add(Token t) {
         String literal = t.getString();
@@ -137,6 +164,10 @@ public class StringList {
 
     /**
      * Adds the given string and its metadata in the hashmap to this StringList
+     *
+     * @param s A string to add to this StringList
+     * @param hm A mapping of files that s appears in to the locations in the
+     *          files where it appears
      */
     public void put(String s, HashMap<String, TreeSet<Location>> hm) {
         HashMap<String, TreeSet<Location>> fileList;
@@ -172,6 +203,9 @@ public class StringList {
 
     /**
      * Removes the given string and all its metadata from this StringList
+     *
+     * @param s A string to remove from this StringList
+     * @return the metadata for s that was removed
      */
     public HashMap<String, TreeSet<Location>> remove(String s) {
         return list.remove(s);
@@ -179,6 +213,9 @@ public class StringList {
 
     /**
      * Returns true if and only if the given string appears in this StringList
+     *
+     * @param s A string to search this StringList for
+     * @return true if and only if the given string appears in this StringList
      */
     public boolean contains(String s) {
         return list.containsKey(s);
@@ -186,6 +223,9 @@ public class StringList {
 
     /**
      * Returns the metadata for the given string from this StringList
+     *
+     * @param s A string to in this StringList
+     * @return the metadata for s
      */
     public HashMap<String, TreeSet<Location>> get(String s) {
         return list.get(s);
@@ -193,6 +233,8 @@ public class StringList {
 
     /**
      * Returns the list of strings in this StringList
+     *
+     * @return all strings in this StringList
      */
     public String[] strings() {
         return list.keySet().toArray(new String[0]);
@@ -200,13 +242,18 @@ public class StringList {
 
     /**
      * Returns the number of strings in this StringList
+     *
+     * @return the number of strings in this StringList
      */
     public int length() {
         return list.size();
     }
 
     /**
-     * Returns the most frequently occurring string in this StringList
+     * Returns a string that has a maximal # of locations associated with it
+     *
+     * @param a A StringList
+     * @return a string that has a maximal # of locations associated with it
      */
     public String maxfreqstring() {
         String maxString = "\"\"";
@@ -230,6 +277,8 @@ public class StringList {
     /**
      * Overrides the generic toString method. Displays the string and all its
      * metadata
+     * 
+     * @return every string in this StringList and all its metadata
      */
     public String toString() {
         HashMap<String, TreeSet<Location>> files;
@@ -274,6 +323,10 @@ class Location implements Comparable<Location> {
 
     /**
      * Constructs a new Location; note it has no direct ties to any strings
+     *
+     * @param line a line in a file
+     * @param start a column on a line in a file
+     * @param end a column on a line in a file
      */
     public Location(int line, int start, int end) {
         this.line = line;
@@ -283,6 +336,11 @@ class Location implements Comparable<Location> {
 
     /**
      * Allows Locations to be sorted. Greater Locations occur later on in files
+     *
+     * @param that Another Location to compare with this one
+     * @return a positive number if this Location occurs later in a file than
+     *          that Location, a negative number if this Location occurs earlier
+     *          in a file than that Location, or 0 otherwise
      */
     public int compareTo(Location that) {
         int comp;
@@ -302,6 +360,8 @@ class Location implements Comparable<Location> {
     /**
      * Overrides the generic toString method. Displays all information contained
      * in this Location object
+     *
+     * @return all fields of this Location in a readable format
      */
     public String toString() {
         return "Ln " + line + ", Col " + start + "-" + end;
@@ -309,6 +369,8 @@ class Location implements Comparable<Location> {
 
     /**
      * Returns this Location's line
+     *
+     * @return this Location's line
      */
     public int getLine() {
         return line;
@@ -316,6 +378,8 @@ class Location implements Comparable<Location> {
 
     /**
      * Returns this Location's start index within its line
+     *
+     * @return this Location's start index
      */
     public int getStart() {
         return start;
@@ -323,6 +387,8 @@ class Location implements Comparable<Location> {
 
     /**
      * Returns this Location's end index
+     *
+     * @return this Location's end index
      */
     public int getEnd() {
         return end;

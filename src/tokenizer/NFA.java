@@ -6,7 +6,7 @@ import java.util.TreeSet;
 
 public class NFA {
 
-	public Automata thisNFA;
+	Automata thisNFA;
 	String thisRegex;
 	static HashSet<Node> nodes;
 	ArrayList<Node> occupiedNodeSet;
@@ -605,6 +605,10 @@ public class NFA {
 		}
 		return alphabet;
 	}
+
+    public Automata automata() {
+        return thisNFA;
+    }
 
 }
 

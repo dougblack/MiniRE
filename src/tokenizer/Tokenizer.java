@@ -14,7 +14,7 @@ public class Tokenizer {
 	
     public static void main(String[] args) {
         //Tokenizer d = new Tokenizer("token_spec.txt", "input2.txt");
-        Tokenizer d = new Tokenizer("ment", "([A-Za-z])*ment([A-Za-z])*", "src/input1.txt");
+        Tokenizer d = new Tokenizer("ment", "([A-Za-z])*ment([A-Za-z])*", "src/input2.txt");
         d.generateTokens();
         ArrayList<Token> tokens = d.getTokens();
 
@@ -114,6 +114,13 @@ public class Tokenizer {
         }
     }
 
+    /**
+     * Ensures the reserved words in the MiniRE language are associated with
+     * their respective tokens rather than the ID token
+     *
+     * @param token A token with a string to evaluate
+     * @return The same token, with a new id if the string matched a keyword
+     */
     public Token checkForReservedWord(Token token) {
         if (token.getString().equals("begin")) {
             token.setId("$BEGIN");
@@ -162,8 +169,9 @@ public class Tokenizer {
     /**
      * This method returns true if the token matches the next token in the array. 
      * It then "removes" this token by incrementing the current_token_index.
-     * @param token
-     * @return
+     *
+     * @param token a Token to compare against the next token in the array
+     * @return true if and only if the token matches the next token in the array
      */
     public boolean matchToken(Token token) { 
     	boolean isMatch =  tokens.get(this.current_token_index).toString().equals(token.toString());
@@ -171,13 +179,16 @@ public class Tokenizer {
     	return isMatch;
     }
 
+    /**
+     * Increments the current token index
+     */
     public void consumeToken() {
         this.current_token_index++;
     }
    
     /**
-     * This method returns the next token without incrementing the current_token_index.
-     * @return
+     * Returns the next token without incrementing the current_token_index.
+     * @return the next token
      */
     public Token peekToken() {
     	return tokens.get(this.current_token_index); 

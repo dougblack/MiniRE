@@ -1,12 +1,13 @@
 package interpreter;
+import tokenizer.NFA;
+import tokenizer.Token;
+import tokenizer.Tokenizer;
+
 import java.io.*;
 import java.nio.channels.*;
 import java.nio.charset.Charset;
 import java.nio.*;
 import java.util.*;
-
-import tokenizer.NFA;
-import tokenizer.Tokenizer;
 
 /**
  * 
@@ -153,18 +154,25 @@ public class Evaluator {
 
     // TODO
     public static String maxFreqString(StringList list) {
-        String mostFrequentString = "";
-        return mostFrequentString;
+        //String mostFrequentString = "";
+        return list.maxfreqstring();
     }
 
 	/**
      * Finds all strings in the given file that match the given regex, and
      * returns them in a StringList
+     * 
+     * ASSUMES REGEX HAS BEEN STRIPPED OF SURROUNDING QUOTES
+     *
+     * @param regex a Regular expression, as a string
+     * @param filename a file to scan for strings matching regex
+     * @param return a StringList containing all matching strings and their
+     *          metadata
      */
-    public static StringList find(String regex, String filename) {
-        regex = regex.replaceAll("'", "");
+    public static StringList find(String regex, String filename){
 		Tokenizer d = new Tokenizer("id", regex, filename);
 		d.generateTokens();
+
 		return StringList.toStringList(d.getTokens());
 	}
 
@@ -172,13 +180,27 @@ public class Evaluator {
      * Replaces all strings in the given file1 that match the given regex with
      * the replacement string and prints the final output to file2. Returns true
      * if matches were found.
+     * 
+     * ASSUMES REGEX AND REPLACEMENT STRING HAVE BEEN STRIPPED OF SURROUNDING
+     * QUOTES
+     *
+     * @param regex a Regular expression, as a string
+     * @param replacement a string to replace everything that matches regex with
+     * @param file1 a file to scan for strings matching regex
+     * @param file2 a file identical to file1, but with the matches replaced
+     * @return true if and only if strings matching regex were found in file1
      */
     public static boolean replace(String regex, String replacement,
         String file1, String file2) {
-        regex = regex.replaceAll("'", "");
-        replacement = replacement.replaceAll("\"", "");
-        file1 = file1.replaceAll("\"", "");
-        file2 = file2.replaceAll("\"", "");
+
+		String fileText = "";
+
+        if (file1.equals(file2)) {
+            System.out.println("Error: input and output file are the same in:\n"
+                + "replace \'" + regex + "\' with \"" + replacement + "\" in "
+                + file1 + " >! " + file2);
+            return false;
+        }
 
 		String[] matches = find(regex, file1).strings();
 
@@ -186,62 +208,147 @@ public class Evaluator {
 			return false;
 		}
 
-		String in = "";
-		regex = regex.substring(1,regex.length()-1);
-        FileInputStream stream = null;
-        try {
-            stream = new FileInputStream(new File(file1));
-            FileChannel fc = stream.getChannel();
-            MappedByteBuffer mbb = fc.map(FileChannel.MapMode.READ_ONLY, 0, fc.size());
-            in = Charset.defaultCharset().decode(mbb).toString();
-            stream.close();
-        } catch (FileNotFoundException fnfe) {
-            System.out.println("Runtime error: " + file1 + " not found.");
-            System.exit(0);
-        } catch (IOException io) {
-            System.out.println("Runtime error: can't get size of FileChannel");
-            System.exit(0);
-        }
-
+        fileText = getFileText(file1);
+		  
 		for (int i=0; i < matches.length; i++){
-			in = in.replace(matches[i], replacement);
+			fileText = fileText.replace(matches[i], replacement);
 		}
-
-        try {
-            FileWriter fstream = new FileWriter(file2);
-            BufferedWriter out = new BufferedWriter(fstream);
-            out.write(in);
-            out.close();
-
-        } catch (IOException ie) {
-            System.out.println("Runtime error: error in file " + file2);
-        }
-        return true;
+        return writeFile(fileText, file2);
 	}
 	
 	/**
      * Will recursively replace all strings in the given file1 that match the
      * given regex with the replacement string and print the final output to
      * file2.
+     * 
+     * ASSUMES REGEX AND REPLACEMENT STRING HAVE BEEN STRIPPED OF SURROUNDING
+     * QUOTES
+     *
+     * @param regex a Regular expression, as a string
+     * @param replacement a string to recursively replace everything that
+     *          matches regex with
+     * @param file1 a file to scan for strings matching regex
+     * @param file2 a file identical to file1, but with all matches replaced
      */
     public static void recursivereplace(String regex, String replacement,
-        String file1, String file2) {
+        String filename1, String filename2) {
+
+        // Check that filename 1 and filename2 are distinct
+
+        if (filename1.equals(filename2)) {
+            System.out.println("Error: input and output file are the same in:\n"
+                + "recursivereplace \'" + regex + "\' with \"" + replacement +
+                "\" in " + filename1 + " >! " + filename2);
+            return;
+        }
         
+        // Prevent infinite recursion
+
         NFA nfa = new NFA(regex);
         String sub = replacement;
         
         while (sub.length() > 0) {
-            if (nfa.testString(nfa.thisNFA, sub)) {
+            if (nfa.testString(nfa.automata(), sub)) {
                 // throw some kind of error - the recursion is infinite
                 System.out.println("Error: infinite loop inevitable at:\n" +
                     "recursivereplace '" + regex + "' with \"" + replacement +
-                    "\" in " + file1 + " >! " + file2);
+                    "\" in " + filename1 + " >! " + filename2);
                 return;
             }
             sub = sub.substring(0, sub.length()-1);
         }
+        
+		// Recursively replace until no more changes can be made
 
-		// Now Recursively replace until no more changes can be made
+        String tempFilename1;
+        
+        try {
+            File file = File.createTempFile("MRE", ".txt", new File(System.getProperty("user.dir")));
+            file.deleteOnExit();
+            tempFilename1 = file.getName();
+        } catch (IOException e) {
+            System.out.println("Unexpected IOException");
+            e.printStackTrace();
+            return;
+        }
+        Evaluator.replace(regex, replacement, filename1, filename2);
 
+        // I put this check below replace to ensure the output file is created       
+        if (regex.equals("") && replacement.equals("")) {
+            // throw some kind of error - the recursion is infinite
+            System.out.println("Error: infinite loop inevitable at:\n" +
+                "recursivereplace '" + regex + "' with \"" + replacement +
+                "\" in " + filename1 + " >! " + filename2);
+            return;
+        }
+
+        while (Evaluator.replace(regex, replacement, filename2, tempFilename1)) {
+            if (!Evaluator.replace(regex, replacement, tempFilename1, filename2)) {
+                // Copy 1 to 2 and be done
+                copy(tempFilename1, filename2);
+                break;
+            }
+        }
 	}
+
+	/**
+     * Copies the contents of srcFile to a file named dstFile
+     * Creates dstFile if it doesn't exist; overwrites it if it does
+     * Returns true if and only if the copy was successful
+     *
+     * @param srcFile the file whose contents will be copied
+     * @param dstFile the file to copy to
+     * @return true if and only if the copy was successful
+     */
+    private static boolean copy(String srcFile, String dstFile) {
+        return writeFile(getFileText(srcFile), dstFile);
+    }
+
+    /**
+     * Returns the contents of src
+     *
+     * @param src the file whose contents will be returned
+     * @return the contents of src
+     */
+    private static String getFileText(String src) {
+        String fileText = "";
+
+        try {
+            FileInputStream stream = new FileInputStream(new File(src));
+            FileChannel fc = stream.getChannel();
+            MappedByteBuffer mbb = fc.map(FileChannel.MapMode.READ_ONLY, 0, fc.size());
+            fileText = Charset.defaultCharset().decode(mbb).toString();
+        } catch (FileNotFoundException e) {
+            System.out.println("File " + src + " not found");
+            e.printStackTrace();
+        } catch (IOException e) {
+            System.out.println("Unexpected IOException");
+            e.printStackTrace();
+        }
+        return fileText;
+    }
+
+    /**
+     * Copies the fileText to a file named dstFile
+     * Creates dstFile if it doesn't exist; overwrites it if it does
+     * Returns true if and only if the copy was successful
+     *
+     * @param filetext the text to copy into dstFile
+     * @param dstFile the file to copy to
+     * @return true if and only if the copy was successful
+     */
+    private static boolean writeFile(String fileText, String dstFile) {
+        boolean written = true;
+        try {
+            FileWriter fstream = new FileWriter(dstFile);
+    		BufferedWriter out = new BufferedWriter(fstream);
+        	out.write(fileText);
+        	out.close();
+        } catch (IOException e) {
+            written = false;
+            System.out.println("Unexpected IOException");
+            e.printStackTrace();
+        }
+        return written;
+    }
 }
