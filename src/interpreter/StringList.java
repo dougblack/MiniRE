@@ -1,6 +1,7 @@
 package interpreter;
 import tokenizer.Token;
 
+import javax.swing.plaf.basic.BasicInternalFrameTitlePane;
 import java.util.ArrayList;
 import java.util.TreeSet;
 import java.util.HashMap;
@@ -118,6 +119,7 @@ public class StringList {
      */
     private HashMap<String, HashMap<String, TreeSet<Long>>> list;
 
+
     /**
      * Constructs a new StringList to represent a string-match list
      */
@@ -137,9 +139,12 @@ public class StringList {
         HashMap<String, TreeSet<Long>> fileList;
         TreeSet<Long> indices;
 
+        /* Add token to the reverse-lookup map */
+
         if (literal == null || file == null) {
             return;
         }
+
         if (list.containsKey(literal)) {
             // The token's string has been found before
             fileList = list.get(literal);
@@ -258,8 +263,8 @@ public class StringList {
      * @return a string in this StringList that has a
      *          maximal # of locations associated with it
      */
-    public String maxfreqstring() {
-        String maxString = "\"\"";
+    public StringList maxfreqstring() {
+        String maxStringKey = "";
         int max = -1, count;
 
         if (list.size() > 0) {
@@ -270,11 +275,14 @@ public class StringList {
                 }
                 if (count >= max) {
                     max = count;
-                    maxString = "\"" + string + "\"";
+                    maxStringKey = string;
                 }
             }
         }
-        return maxString;
+        StringList sl = new StringList();
+        if (list.containsKey(maxStringKey))
+            sl.list.put(maxStringKey, list.get(maxStringKey));
+        return sl;
     }
 
     /**

@@ -158,17 +158,6 @@ public class Evaluator {
         return null;
     }
 
-    /**
-     * Returns a string in list that occurs a maximal number of times, taking
-     * into account all strings and all files they appear in
-     *
-     * @param a A StringList
-     * @return a string that has a maximal # of locations associated with it
-     */
-    public static String maxFreqString(StringList list) {
-        return list.maxfreqstring();
-    }
-
 	/**
      * Finds all strings in the given file that match the given regex, and
      * returns them in a StringList
