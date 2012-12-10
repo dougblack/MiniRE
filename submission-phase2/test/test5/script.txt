@@ -1,5 +1,5 @@
 begin
-recursivereplace 'a' with "aa" in input1.txt >! output1.txt;
-print(find 'If[ ]you[ ]are.*from[ ]seeing[ ]this.' in input1.txt);
+recursivereplace 'a' with "aa" in "input1.txt" >! "output1.txt";
+print(find 'If[ ]you[ ]are.*from[ ]seeing[ ]this.' in "input1.txt");
 end
 

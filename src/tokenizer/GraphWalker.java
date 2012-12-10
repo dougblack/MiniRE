@@ -101,7 +101,10 @@ public class GraphWalker {
             else if (c == '\'' && !escaped) inSingleQuotes = false;
             else if (c == '\\' && !escaped) escaped = true;
             else if (escaped) escaped = false;
-            else if (c == ' ' && !inDoubleQuotes && !inSingleQuotes && !escaped) break;
+            else if (c == ' ' && !inDoubleQuotes && !inSingleQuotes && !escaped) {
+                c = nextChar();
+                //break;
+            }
             //System.out.println(c);
             step(c);
             tokenString = tokenString + c;

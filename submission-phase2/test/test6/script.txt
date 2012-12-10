@@ -17,7 +17,7 @@ under2 = find '.*_.*' in "output1.txt";
 nUnder2 = #under2;
 mUnder2 = maxfreqstring(under2);
 
-dash2 = find '.*-.*' in "output1.txt";
+dash2 = find '.*[\-].*' in "output1.txt";
 nDash2 = #dash2;
 mDash2 = maxfreqstring(dash2);
 
