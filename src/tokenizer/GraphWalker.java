@@ -95,15 +95,14 @@ public class GraphWalker {
         }
         do {
 
-            if (c == '\"' && !inDoubleQuotes && !escaped) inDoubleQuotes = true;
+            if (c == '\"' && !inDoubleQuotes && !inSingleQuotes && !escaped) inDoubleQuotes = true;
             else if (c == '\"' && !escaped) inDoubleQuotes = false;
-            else if (c == '\'' && !inSingleQuotes && !escaped) inSingleQuotes = true;
+            else if (c == '\'' && !inSingleQuotes && !inDoubleQuotes && !escaped) inSingleQuotes = true;
             else if (c == '\'' && !escaped) inSingleQuotes = false;
             else if (c == '\\' && !escaped) escaped = true;
             else if (escaped) escaped = false;
             else if (c == ' ' && !inDoubleQuotes && !inSingleQuotes && !escaped) {
-                c = nextChar();
-                //break;
+                break;
             }
             //System.out.println(c);
             step(c);
@@ -206,9 +205,13 @@ public class GraphWalker {
      */
     private char advanceToToken() {
         char currentChar = (char) -1;
-        
-        while (((currentChar = gc.getNextChar()) != EOF)
-                && ((currentChar <= SPACE) || (currentChar >= DELETE)));
+
+        if (gc == null)
+            return (char) -1;
+        currentChar = gc.getNextChar();
+        while (currentChar != EOF && ((currentChar <= SPACE) || (currentChar >= DELETE))) {
+            currentChar = gc.getNextChar();
+        }
         return currentChar;
     }
 }

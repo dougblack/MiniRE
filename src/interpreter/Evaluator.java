@@ -124,18 +124,21 @@ public class Evaluator {
                 if (children.get(1).children.get(0).nodeType.equals("EPSILON")) {
                     return eval(children.get(0));
                 } else {
-                    StringList result = (StringList) eval(children.get(0));
-                    SyntaxTreeNode exp_list = children.get(1);
-                    while (!exp_list.children.get(0).nodeType.equals("EPSILON")) {
-                        StringList list = (StringList) eval(exp_list.children.get(1));
-                        if (exp_list.children.get(0).children.get(0).id.equals("$DIFF")) {
-                            result = StringList.diff(result, list);
-                        } else if (exp_list.children.get(0).children.get(0).id.equals("$UNION")) {
-                            result = StringList.union(result, list);
-                        } else if (exp_list.children.get(0).children.get(0).id.equals("$INTERS")) {
-                            result = StringList.inters(result, list);
+                    StringList term = (StringList) eval(children.get(0));
+                    SyntaxTreeNode exp_tail = children.get(1);
+                    StringList result = new StringList();
+                    while (!exp_tail.children.get(0).nodeType.equals("EPSILON")) {
+                        StringList list = (StringList) eval(exp_tail.children.get(1));
+                        if (exp_tail.children.get(0).children.get(0).id.equals("$DIFF")) {
+                            System.out.println("DIFF");
+                            result = StringList.diff(term, list);
+                        } else if (exp_tail.children.get(0).children.get(0).id.equals("$UNION")) {
+                            result = StringList.union(term, list);
+                        } else if (exp_tail.children.get(0).children.get(0).id.equals("$INTERS")) {
+                            result = StringList.inters(term, list);
                         }
-                        exp_list = exp_list.children.get(2);
+                        exp_tail = exp_tail.children.get(2);
+                        term = result;
                     }
                     return result;
                 }
