@@ -1,1 +1,1 @@
-If_you_are_seeing_this_printed_out_there_is_a_problem._The_first_statement_in_the_script_assigns_a_value_to_the_reserved_word_'in',_and_the_second_statement_prints_the_variable_'in',_so_a_parse_error_should_prevent_you_from_seeing_this.
+If you are seeing this printed out there is a problem. The first statement in the script assigns a value to the reserved word 'in', and the second statement prints the variable 'in', so a parse error should prevent you from seeing this.

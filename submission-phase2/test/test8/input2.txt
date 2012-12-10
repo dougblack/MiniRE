@@ -1,15 +1,8 @@
-/**
- * This is a javadoc comment that is not valid in MiniRE scripts.
- * Another script will have to remove this from the file.
- */
+/** This is a javadoc comment that is not valid in MiniRE scripts. * Another script will have to remove this from the file. */
 begin
 print(find '([A-Za-z0-9_])*(A|a)utomata([A-Za-z0-9_])*' in input1.txt);
 
-/*
- * Another comment that will prevent this script from executing.
- *
- * (Not that we're trying to execute this script);
- */
+/* Another comment that will prevent this script from executing. (Not that we're trying to execute this script); */
 Automata = find 'Automata' in input1.txt;
 n_Automata = #Automata;
 print(maxfreqstring(Automata));/****/
@@ -54,8 +47,7 @@ print(n_automata);
 /*///* No problems here... */ // ...unless the //s are removed first
 print(maxfreqstring(Graph));
 print(n_Graph);
-/*/* This, on the other hand, would cause a problem (for the script that will be
-output) if the above regexes are used and both comments I opened here are closed */
+/*/* */
 print(maxfreqstring(graph));
 print(n_graph);
 end

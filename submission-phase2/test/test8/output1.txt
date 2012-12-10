@@ -1,1 +1,1 @@
-input2.txt_is_a_MiniRe_script_with_several_java_comments_of_different_styles_-_//,_/*...*/,_and_/**...*...*/,_etc._Since_MiniRE_does_not_accept_these_comments,_let's_remove_them_and_make_input2.txt_a_runnable_script._Here_are_all_the_comments_in_the_script:
+input2.txt is a MiniRe script with several java comments of different styles - //, /*...*/, and /**...*...*/, etc. Since MiniRE does not accept these comments, let's remove them and make input2.txt a runnable script. Here are all the comments in the script:
