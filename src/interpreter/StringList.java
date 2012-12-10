@@ -85,7 +85,6 @@ public class StringList {
                 
         for (int i=0; i < bStrings.length; i++) {
             if (a.contains(bStrings[i])) {
-                System.out.println("Removed");
                 a.remove(bStrings[i]);
             }
         }

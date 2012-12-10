@@ -130,7 +130,6 @@ public class Evaluator {
                     while (!exp_tail.children.get(0).nodeType.equals("EPSILON")) {
                         StringList list = (StringList) eval(exp_tail.children.get(1));
                         if (exp_tail.children.get(0).children.get(0).id.equals("$DIFF")) {
-                            System.out.println("DIFF");
                             result = StringList.diff(term, list);
                         } else if (exp_tail.children.get(0).children.get(0).id.equals("$UNION")) {
                             result = StringList.union(term, list);
