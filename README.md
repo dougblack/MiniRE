@@ -25,11 +25,11 @@ end
 The above code outputs all occurrences of the words "puppy" and 'kitten', as well as the total number of occurrences of each.
 
 It contains a built-from-scratch:
--`Regex Engine` (automata-based)
--`Lexer`
--`Scanner`
--`Parser`
--`Evaluator`
+- `Regex Engine` (automata-based)
+- `Lexer`
+- `Scanner`
+- `Parser`
+- `Evaluator`
 
 The regex engine, lexer, and scanner were designed to be extensible, so they contain no MiniRE-specific functionality. They can be reused with any regular language grammar to produce consumable tokens for the production of an Abstract Syntax Tree.
 
