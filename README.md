@@ -18,22 +18,20 @@ num_of_kitties = #kitties;
 
 pups_and_kitts = find 'puppy in 'animals.txt' union find 'kitten' in 'animals.txt;
 
-print (pups,num_of_pups, kitties, num_of_kitties);
+print (pups, num_of_pups, kitties, num_of_kitties);
 end
 </pre>
 
 The above code outputs all occurrences of the words "puppy" and 'kitten', as well as the total number of occurrences of each.
 
-It contains a built-from-scratch:
+This interpreter contains a built-from-scratch:
 - `Regex Engine` (automata-based)
 - `Lexer`
 - `Scanner`
 - `Parser`
 - `Evaluator`
 
-The regex engine, lexer, and scanner were designed to be extensible, so they contain no MiniRE-specific functionality. They can be reused with any regular language grammar to produce consumable tokens for the production of an Abstract Syntax Tree.
-
-The parser and evaluator are, however, specific to MiniRE scripts.
+The regex engine, lexer, and scanner were designed to be extensible, so they contain no MiniRE-specific functionality. They can be reused with any regular language grammar to produce consumable tokens for the production of an Abstract Syntax Tree. The parser and evaluator are, however, specific to MiniRE scripts.
 
 Process
 -------
@@ -47,4 +45,4 @@ This is what happens when a MiniRE script is run.
 5. The `Evaluator` begins at the root of the `AST` and evaluates all the nodes in the tree, producing output as necessary.
 6. Once there are no more nodes to evaluate, the interpeter quits.
 
-Each step has built in error handling so errors are caught before the propogate down the pipeline.
+Each step has built in error handling so errors are caught before they propogate down the pipeline.
