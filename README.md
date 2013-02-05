@@ -8,7 +8,7 @@ This is a fully implemented interpreter for the MiniRE 'toy' language. You can t
 
 MiniRE deals primarily with the combination and manipulation of `string-lists`.
 
-<code>
+<pre>
 begin
 
 pups = find 'puppy' in 'animals.txt';
@@ -20,7 +20,7 @@ pups_and_kitts = find 'puppy in 'animals.txt' union find 'kitten' in 'animals.tx
 
 print (pups,num_of_pups, kitties, num_of_kitties);
 end
-</code>
+</pre>
 
 The above code outputs all occurances of the words "puppy" and 'kitten', as well as the total number of occurrences of each.
 
