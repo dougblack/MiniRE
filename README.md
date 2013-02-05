@@ -1,8 +1,7 @@
 MiniRE
 =====
 
-Intro
------
+### Intro
 
 This is a fully implemented interpreter for the MiniRE 'toy' language. You can think of MiniRE as a mini Awk or Perl.
 
@@ -33,8 +32,7 @@ This interpreter contains a built-from-scratch:
 
 The regex engine, lexer, and scanner were designed to be extensible, so they contain no MiniRE-specific functionality. They can be reused with any regular language grammar to produce consumable tokens for the production of an Abstract Syntax Tree. The parser and evaluator are, however, specific to MiniRE scripts.
 
-Process
--------
+### Process
 
 This is what happens when a MiniRE script is run.
 
