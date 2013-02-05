@@ -22,7 +22,7 @@ print (pups,num_of_pups, kitties, num_of_kitties);
 end
 </pre>
 
-The above code outputs all occurances of the words "puppy" and 'kitten', as well as the total number of occurrences of each.
+The above code outputs all occurrences of the words "puppy" and 'kitten', as well as the total number of occurrences of each.
 
 It contains a built-from-scratch:
 -`Regex Engine` (automata-based)
